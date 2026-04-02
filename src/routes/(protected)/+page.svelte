@@ -1,0 +1,59 @@
+<script>
+  import naruto from '$lib/assets/naruto1.png';
+  const items = [
+    { name: 'Shirts', icon: '👔' },
+    { name: 'T-Shirts', icon: '👕' },
+    { name: 'Jeans', icon: '👖' },
+    { name: 'Blazers', icon: '🧥' },
+    { name: 'Accessories', icon: '⌚' },
+  ];
+</script>
+
+<main
+  class="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden bg-linear-to-br from-black via-gray-900 to-gray-800 text-white"
+>
+  <!-- Animated Background Glow -->
+  <div
+    class="absolute -top-40 -left-40 h-96 w-96 animate-pulse rounded-full bg-orange-800 opacity-30 blur-3xl"
+  ></div>
+  <div
+    class="absolute right-0 bottom-0 h-96 w-96 animate-pulse rounded-full bg-purple-950 opacity-30 blur-3xl"
+  ></div>
+
+  <img src={naruto} alt="" class="absolute left-0 h-dvh opacity-50" />
+
+  <!-- Content -->
+  <div class="z-10 text-center">
+    <h1
+      class="bg-linear-to-r from-orange-400 to-purple-400 bg-clip-text text-6xl font-extrabold text-transparent drop-shadow-lg"
+    >
+      Naruto Mens Wear
+    </h1>
+    <p class="mt-4 text-xl tracking-wide text-gray-300">
+      Manage accounts in a simple and powerful way
+    </p>
+  </div>
+
+  <!-- Menu Cards -->
+  <div class="z-10 mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+    {#each items as item, index (index)}
+      <div
+        class="group relative cursor-pointer overflow-hidden rounded-2xl border border-white/20 bg-white/10 p-6 backdrop-blur-lg transition-all duration-300 hover:scale-110 hover:bg-white/20 hover:shadow-2xl hover:shadow-orange-500/30"
+      >
+        <!-- Hover Glow Effect -->
+        <div
+          class="absolute inset-0 rounded-2xl bg-linear-to-tr from-purple-500/20 to-orange-500/20 opacity-0 transition duration-300 group-hover:opacity-100"
+        ></div>
+
+        <div class="z-20 flex flex-col items-center gap-3">
+          <span class="text-4xl transition-transform duration-300 group-hover:rotate-12">
+            {item.icon}
+          </span>
+          <span class="z-20 text-lg font-semibold tracking-wide">
+            {item.name}
+          </span>
+        </div>
+      </div>
+    {/each}
+  </div>
+</main>

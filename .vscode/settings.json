@@ -1,0 +1,35 @@
+// .vscode\settings.json
+
+{
+  "files.associations": {
+    "*.css": "tailwindcss"
+  },
+
+  // ===== Editor =====
+  "editor.formatOnSave": true,
+  "files.eol": "\n",
+  "editor.tabSize": 2,
+  "editor.insertSpaces": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "prettier.configPath": ".prettierrc",
+
+  // Run ESLint fixes on save
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": "explicit"
+  },
+
+  // Prettier
+  "prettier.requireConfig": true,
+  "prettier.endOfLine": "lf",
+
+  // ESLint
+  "eslint.format.enable": false,
+  "eslint.validate": ["javascript", "typescript", "svelte"],
+
+  // Per-language override for Svelte
+  "[svelte]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+
+  "source.fixAll.eslint": true
+}
