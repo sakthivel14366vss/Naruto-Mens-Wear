@@ -1,13 +1,19 @@
-<script>
-  import naruto from '$lib/assets/naruto1.png';
-  const items = [
-    { name: 'Shirts', icon: '👔' },
-    { name: 'T-Shirts', icon: '👕' },
-    { name: 'Jeans', icon: '👖' },
-    { name: 'Blazers', icon: '🧥' },
-    { name: 'Accessories', icon: '⌚' },
-  ];
+<!-- src\routes\(protected)\+page.svelte -->
+<script lang="ts">
+  import naruto from '$lib/client/assets/naruto1.png';
+
+  const CATEGORIES = [
+    { name: 'Shirts', icon: '👔', href: '/inventory/shirts' },
+    { name: 'T-Shirts', icon: '👕', href: '/inventory/t-shirts' },
+    { name: 'Jeans', icon: '👖', href: '/inventory/jeans' },
+    { name: 'Blazers', icon: '🧥', href: '/inventory/blazers' },
+    { name: 'Accessories', icon: '⌚', href: '/inventory/accessories' },
+  ] as const;
 </script>
+
+<svelte:head>
+  <title>Dashboard | Naruto Mens Wear</title>
+</svelte:head>
 
 <main
   class="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden bg-linear-to-br from-black via-gray-900 to-gray-800 text-white"
@@ -36,7 +42,7 @@
 
   <!-- Menu Cards -->
   <div class="z-10 mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
-    {#each items as item, index (index)}
+    {#each CATEGORIES as item, index (index)}
       <div
         class="group relative cursor-pointer overflow-hidden rounded-2xl border border-white/20 bg-white/10 p-6 backdrop-blur-lg transition-all duration-300 hover:scale-110 hover:bg-white/20 hover:shadow-2xl hover:shadow-orange-500/30"
       >
