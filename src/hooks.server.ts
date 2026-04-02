@@ -2,6 +2,7 @@
 import type { Handle, ServerInit } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
 import { connectDB } from '$lib/server/utils/mongodb';
+// import testHandler from '$lib/server/middleware/testHandler';
 
 /**
  * Runs once when the server starts.
@@ -27,3 +28,4 @@ export const init: ServerInit = async () => {
 export const handle: Handle = sequence();
 // customRouteHandler,
 // Add more hooks here (auth, logging, etc.)
+// testHandler,
