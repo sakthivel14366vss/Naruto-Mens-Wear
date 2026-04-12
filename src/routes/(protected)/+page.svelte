@@ -15,9 +15,7 @@
   <title>Dashboard | Naruto Mens Wear</title>
 </svelte:head>
 
-<main
-  class="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden bg-linear-to-br from-black via-gray-900 to-gray-800 text-white"
->
+<section class="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden">
   <!-- Animated Background Glow -->
   <div
     class="absolute -top-40 -left-40 h-96 w-96 animate-pulse rounded-full bg-orange-800 opacity-30 blur-3xl"
@@ -26,10 +24,10 @@
     class="absolute right-0 bottom-0 h-96 w-96 animate-pulse rounded-full bg-purple-950 opacity-30 blur-3xl"
   ></div>
 
-  <img src={naruto} alt="" class="absolute left-0 h-dvh opacity-50" />
+  <img src={naruto} alt="" class="absolute top-70 left-0 h-auto opacity-50 md:top-auto md:h-dvh" />
 
   <!-- Content -->
-  <div class="z-10 text-center">
+  <div class="z-10 p-5 text-center">
     <h1
       class="bg-linear-to-r from-orange-400 to-purple-400 bg-clip-text text-6xl font-extrabold text-transparent drop-shadow-lg"
     >
@@ -41,7 +39,7 @@
   </div>
 
   <!-- Menu Cards -->
-  <div class="z-10 mt-14 grid grid-cols-1 gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
+  <div class="z-10 mt-14 grid grid-cols-1 gap-6 p-5 md:grid-cols-2 md:grid-cols-3 lg:grid-cols-5">
     {#each CATEGORIES as item, index (index)}
       <div
         class="group relative cursor-pointer overflow-hidden rounded-2xl border border-white/20 bg-white/10 p-6 backdrop-blur-lg transition-all duration-300 hover:scale-110 hover:bg-white/20 hover:shadow-2xl hover:shadow-orange-500/30"
@@ -62,4 +60,4 @@
       </div>
     {/each}
   </div>
-</main>
+</section>

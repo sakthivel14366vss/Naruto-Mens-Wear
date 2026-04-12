@@ -19,7 +19,10 @@
   <meta charset="utf-8" />
 </svelte:head>
 
-<main id="main-content">
+<main
+  id="main-content"
+  class="border-white bg-linear-to-br from-black via-gray-900 to-gray-800 font-semibold text-white"
+>
   {@render children()}
 </main>
 

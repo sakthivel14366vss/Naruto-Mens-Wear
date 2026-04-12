@@ -1,1 +1,19 @@
 @import 'tailwindcss';
+
+/* Iconify v4 plugin for Icons */
+@plugin '@iconify/tailwind4';
+
+@layer utilities {
+  /* Chrome, Safari, Edge, Opera */
+  input[type='number']::-webkit-inner-spin-button,
+  input[type='number']::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+  }
+
+  /* Firefox */
+  input[type='number'] {
+    -moz-appearance: textfield;
+    appearance: textfield; /* Standard property for future compatibility */
+  }
+}
