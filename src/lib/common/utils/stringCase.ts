@@ -39,34 +39,12 @@ const stringCase = {
   },
 
   /**
-   * Converts slugs, snake_case, or messy strings into clean Title Case.
-   * Preserves acronyms (all caps).
+   * Returns the value exactly as-is with no modifications.
    */
-  smartTitle<T>(val: T, options: { allowedChars?: string[] } = {}): MaybeString<T> {
-    if (typeof val !== 'string' || !val.trim()) return val as MaybeString<T>;
-
-    const { allowedChars = [] } = options;
-
-    // 1. Escape special characters for RegEx
-    const escaped = allowedChars.map((c) => c.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')).join('');
-
-    // 2. Clean string: replace separators with space, remove forbidden chars
-    const cleaned = val
-      .replace(/[_-]+/g, ' ')
-      .replace(new RegExp(`[^\\w\\s${escaped}]`, 'g'), '')
-      .trim();
-
-    return cleaned
-      .split(/\s+/)
-      .map((word) => {
-        // If word is already an acronym (e.g., "API"), keep it
-        if (/^[A-Z0-9]+$/.test(word)) return word;
-
-        // Otherwise, Capitalize first letter, lowercase rest
-        return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
-      })
-      .join(' ') as MaybeString<T>;
+  none<T>(val: T): T {
+    return val;
   },
 };
 
 export default stringCase;
+export type stringCaseKey = keyof typeof stringCase;

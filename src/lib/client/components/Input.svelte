@@ -1,6 +1,7 @@
 <!-- src\lib\client\components\Input.svelte -->
 <script lang="ts">
   import icons, { type IconKey } from '../const/icons';
+  import stringCase, { type stringCaseKey } from '$lib/common/utils/stringCase';
 
   // Constant Declare
   const emptyFunction = () => {};
@@ -14,6 +15,7 @@
     value = $bindable(''),
     onPrefixClick = emptyFunction,
     onSuffixClick = emptyFunction,
+    caseMode = 'none',
   }: {
     type?: string;
     label?: string;
@@ -22,6 +24,7 @@
     suffixIcon?: IconKey;
     onPrefixClick?: (e: MouseEvent) => void;
     onSuffixClick?: (e: MouseEvent) => void;
+    caseMode?: stringCaseKey;
   } = $props();
 
   // State Declare
@@ -40,7 +43,7 @@
 
   function handleInput(e: Event) {
     const target = e.currentTarget as HTMLInputElement;
-    value = target.value || '';
+    value = stringCase[caseMode]?.(target.value || '');
   }
 </script>
 

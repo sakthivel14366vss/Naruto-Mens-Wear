@@ -3,6 +3,6 @@
 </script>
 
 <section class="w-md border border-red-500 p-5">
-  <Input value="" label="Username" prefixIcon="user" />
+  <Input value="" label="Username" prefixIcon="user" caseMode="title" />
   <Input value="" label="Password" prefixIcon="keyRound" suffixIcon="eyeOff" />
 </section>
