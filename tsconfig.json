@@ -21,7 +21,7 @@
     "src/**/*.ts",
     "src/**/*.js",
     "src/**/*.svelte",
-    "svelte.config.ts",
+    "svelte.config.js",
     "eslint.config.ts",
     ".svelte-kit/ambient.d.ts",
     ".svelte-kit/types/**/$types.d.ts",
