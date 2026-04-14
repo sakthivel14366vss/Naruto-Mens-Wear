@@ -1,22 +1,11 @@
 <!-- src\lib\client\components\Input.svelte -->
-<script lang="ts">
+<script lang="ts" generics="T extends Record<string, unknown> | string">
   import icons, { type IconKey } from '../const/icons';
   import stringCase, { type stringCaseKey } from '$lib/common/utils/stringCase';
 
-  // Constant Declare
-  const emptyFunction = () => {};
-
-  // Props Declare
-  let {
-    type = 'text',
-    prefixIcon = undefined,
-    suffixIcon = undefined,
-    label = '',
-    value = $bindable(''),
-    onPrefixClick = emptyFunction,
-    onSuffixClick = emptyFunction,
-    caseMode = 'none',
-  }: {
+  // 1. Define the interface using T
+  type ExtractKeys<U> = U extends object ? keyof U : string;
+  interface Props {
     type?: string;
     label?: string;
     value: string;
@@ -25,7 +14,29 @@
     onPrefixClick?: (e: MouseEvent) => void;
     onSuffixClick?: (e: MouseEvent) => void;
     caseMode?: stringCaseKey;
-  } = $props();
+    options?: T[];
+    // Use 'any' here for the default strings to avoid complex conditional types
+    labelKey?: ExtractKeys<T>;
+    valueKey?: ExtractKeys<T>;
+  }
+
+  // Constant Declare
+  const emptyFunction = () => {};
+
+  // 2. Destructure from $props<Props>()
+  let {
+    type = 'text',
+    prefixIcon = undefined,
+    suffixIcon = undefined,
+    label = '',
+    value = $bindable(''),
+    onPrefixClick = () => {},
+    onSuffixClick = () => {},
+    caseMode = 'none',
+    options = [],
+    labelKey = 'name',
+    valueKey = 'value',
+  }: Props = $props();
 
   // State Declare
   let isFocused = $state(false);
@@ -99,11 +110,13 @@
   </div>
 
   <!-- Options -->
-  <div
-    class="absolute z-20 w-full divide-y-2 divide-white/50 rounded-b border-2 border-white bg-gray-900 *:px-2 *:py-1"
-  >
-    <div>Test</div>
-    <div>Test</div>
-    <div>Test</div>
-  </div>
+  {#if isFocused}
+    <div
+      class="absolute z-20 w-full divide-y-2 divide-white/50 rounded-b border-2 border-white bg-gray-900 *:px-2 *:py-1"
+    >
+      {#each options as option, index (index)}
+        <div>{JSON.stringify(option)}</div>
+      {/each}
+    </div>
+  {/if}
 </div>
