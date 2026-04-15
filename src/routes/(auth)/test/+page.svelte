@@ -1,26 +1,28 @@
 <script lang="ts">
   import Input from '$lib/client/components/Input.svelte';
-
-  type Option = {
-    name: string;
-    value: string;
-  };
-
-  const options: Option[] = [
-    { name: 'Seeni', value: 'seenivasan' },
-    { name: 'Vasan', value: 'vasanAdsk' },
+  const optionstring: string[] = [
+    'Seeni',
+    'Vasan',
+    'Sakthi',
+    'Siva',
+    'Sundar',
+    'Sankar',
+    'Vijay',
+    'Vignesh',
+    'Vimal',
+    'Vishnu',
   ];
 
-  const optionstring: string[] = ['Seeni', 'Vasan'];
+  let vall = $state('');
 </script>
 
-<section class="w-md border border-red-500 p-5">
-  <Input value="" label="Username" prefixIcon="user" caseMode="title" {options} />
+<section class="flex w-md border border-red-500 p-5">
   <Input
-    value=""
+    bind:value={vall}
     label="Password"
     prefixIcon="keyRound"
     suffixIcon="eyeOff"
     options={optionstring}
   />
+  <div class="m-3">{vall}</div>
 </section>
