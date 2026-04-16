@@ -18,6 +18,7 @@
     caseMode?: stringCaseKey;
     options?: string[];
     searchMode?: 'includes' | 'startsWith' | 'endsWith';
+    className?: string;
   }
 
   // Constant Declare
@@ -37,6 +38,7 @@
     optionSnippet = undefined,
     options = [],
     searchMode = 'startsWith',
+    className = '',
   }: Props = $props();
 
   // State Declare
@@ -133,7 +135,7 @@
 
 <div
   class="group relative w-full appearance-none items-center rounded border-2 not-last:mb-4
-  {isFocused ? 'border-amber-400' : ''} {canShowOptions ? 'rounded-b-none' : ''}"
+  {isFocused ? 'border-amber-400' : ''} {canShowOptions ? 'rounded-b-none' : ''} {className}"
 >
   <!-- Main Part -->
   <div class="flex divide-x-2 {isFocused ? 'divide-amber-400' : ''}">
