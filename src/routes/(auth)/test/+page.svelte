@@ -1,3 +1,4 @@
+<!-- src\routes\(auth)\test\+page.svelte -->
 <script lang="ts">
   import Input from '$lib/client/components/Input.svelte';
   const optionstring: string[] = [
@@ -12,17 +13,9 @@
     'Vimal',
     'Vishnu',
   ];
-
-  let vall = $state('');
 </script>
 
-<section class="flex w-md border border-red-500 p-5">
-  <Input
-    bind:value={vall}
-    label="Password"
-    prefixIcon="keyRound"
-    suffixIcon="eyeOff"
-    options={optionstring}
-  />
-  <div class="m-3">{vall}</div>
+<section class="w-lg border border-red-500 p-5">
+  <Input label="User" prefixIcon="user" options={optionstring} />
+  <Input label="Password" prefixIcon="keyRound" suffixIcon="eyeOff" options={optionstring} />
 </section>

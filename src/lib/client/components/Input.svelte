@@ -1,5 +1,6 @@
 <!-- src\lib\client\components\Input.svelte -->
 <script lang="ts">
+  import type { Snippet } from 'svelte';
   import icons, { type IconKey } from '../const/icons';
   import stringCase, { type stringCaseKey } from '$lib/common/utils/stringCase';
 
@@ -7,9 +8,11 @@
   interface Props {
     type?: string;
     label?: string;
-    value: string;
+    value?: string;
+    input?: string;
     prefixIcon?: IconKey;
     suffixIcon?: IconKey;
+    optionSnippet?: Snippet<[string, { index: number; isSelected: boolean }]>;
     onPrefixClick?: (e: MouseEvent) => void;
     onSuffixClick?: (e: MouseEvent) => void;
     caseMode?: stringCaseKey;
@@ -27,9 +30,11 @@
     suffixIcon = undefined,
     label = '',
     value = $bindable(''),
+    input = $bindable(''),
     onPrefixClick = () => {},
     onSuffixClick = () => {},
     caseMode = 'none',
+    optionSnippet = undefined,
     options = [],
     searchMode = 'startsWith',
   }: Props = $props();
@@ -62,19 +67,22 @@
 
   // Function Declare
   function handleBlur() {
-    if (search.length == 0) {
+    if (search.trim().length == 0) {
       value = '';
-      selectedOption = '';
-    } else if (selectedOption.length > 0) {
+      search = '';
+      input = '';
+    } else {
       value = selectedOption;
+      search = selectedOption;
+      input = selectedOption;
     }
-    search = selectedOption || value.trim();
     isFocused = false;
   }
 
   function handleInput(e: Event) {
     const target = e.currentTarget as HTMLInputElement;
     search = stringCase[caseMode]?.(target.value || '');
+    input = search;
   }
 
   function handleClickOption(e: Event, option: string) {
@@ -82,6 +90,7 @@
     selectedOption = option;
     value = option || '';
     search = option;
+    input = option;
   }
 
   async function handleKeydown(e: Event) {
@@ -90,6 +99,7 @@
         if (canShowOptions && selectedOption) {
           value = selectedOption;
           search = selectedOption;
+          input = selectedOption;
         }
         break;
       case 'ArrowDown':
@@ -122,7 +132,7 @@
 </script>
 
 <div
-  class="group relative appearance-none items-center rounded border-2 not-last:mb-4
+  class="group relative w-full appearance-none items-center rounded border-2 not-last:mb-4
   {isFocused ? 'border-amber-400' : ''} {canShowOptions ? 'rounded-b-none' : ''}"
 >
   <!-- Main Part -->
@@ -152,6 +162,7 @@
       <input
         {type}
         bind:value={search}
+        data-value={input}
         class="w-full bg-transparent outline-none"
         onfocus={() => (isFocused = true)}
         onblur={handleBlur}
@@ -175,16 +186,23 @@
 
   <!-- Options -->
   {#if canShowOptions}
-    <div
-      class="absolute -right-0.5 -left-0.5 z-20 divide-y-2 divide-amber-400/50 rounded-b border-2 border-amber-400 bg-gray-900 *:px-1 *:py-0.5"
-    >
+    <div class="absolute -right-0.5 -left-0.5 z-20 rounded-b border-2 border-amber-400 bg-gray-900">
       {#each searchedOptions as option, index (index)}
         <!-- svelte-ignore a11y_no_static_element_interactions -->
-        <div
-          class={selectedOption == option ? 'bg-amber-900' : 'hover:bg-amber-950'}
-          onmousedown={(e) => handleClickOption(e, option)}
-        >
-          {option}
+        <div onmousedown={(e) => handleClickOption(e, option)}>
+          {#if optionSnippet}
+            <div>
+              {@render optionSnippet(option, { index, isSelected: selectedOption == option })}
+            </div>
+          {:else}
+            <div
+              class="border-amber-400 px-1 py-0.5
+              {index == searchedOptions.length - 1 ? 'border-b-0' : 'border-b-2'}
+              {selectedOption == option ? 'bg-amber-900' : 'hover:bg-amber-950'}"
+            >
+              {option}
+            </div>
+          {/if}
         </div>
       {/each}
     </div>
