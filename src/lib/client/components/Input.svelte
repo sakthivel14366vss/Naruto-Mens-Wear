@@ -1,6 +1,6 @@
 <!-- src\lib\client\components\Input.svelte -->
 <script lang="ts">
-  import type { Snippet } from 'svelte';
+  import { onMount, type Snippet } from 'svelte';
   import icons, { type IconKey } from '../const/icons';
   import stringCase, { type stringCaseKey } from '$lib/common/utils/stringCase';
 
@@ -19,6 +19,8 @@
     options?: string[];
     searchMode?: 'includes' | 'startsWith' | 'endsWith';
     className?: string;
+    labelBg?: string;
+    autofocus?: boolean;
   }
 
   // Constant Declare
@@ -32,19 +34,22 @@
     label = '',
     value = $bindable(''),
     input = $bindable(''),
-    onPrefixClick = () => {},
-    onSuffixClick = () => {},
+    onPrefixClick = emptyFunction,
+    onSuffixClick = emptyFunction,
     caseMode = 'none',
     optionSnippet = undefined,
     options = [],
     searchMode = 'startsWith',
     className = '',
+    labelBg = 'black',
+    autofocus = false,
   }: Props = $props();
 
   // State Declare
   let isFocused = $state(false);
   let search = $state('');
   let selectedOption = $state('');
+  let inputRef = $state<HTMLInputElement | undefined>(undefined);
 
   // Derived Declare
   let labelActive = $derived(isFocused || value);
@@ -131,6 +136,12 @@
       selectedOption = '';
     }
   });
+
+  onMount(() => {
+    if (autofocus) {
+      inputRef?.focus();
+    }
+  });
 </script>
 
 <div
@@ -144,7 +155,8 @@
       <!-- svelte-ignore a11y_no_static_element_interactions -->
       <div
         class="flex items-center justify-center self-stretch px-2 py-1
-              {isOnPrefixClickCallable ? 'cursor-pointer hover:text-amber-400' : ''}"
+              {isOnPrefixClickCallable ? 'cursor-pointer hover:text-amber-400' : ''}
+              {isOnPrefixClickCallable && isFocused ? 'border-amber-400' : ''}"
         onclick={onPrefixClick}
       >
         <span class="{icons[prefixIcon]} leading-none"></span>
@@ -155,7 +167,7 @@
       {#if label}
         <span
           class="absolute z-10 transition-all {labelActive
-            ? 'bottom-full translate-y-1/4 scale-90 bg-black px-1 text-sm'
+            ? 'bottom-full translate-y-1/4 scale-90 px-1 text-sm ' + labelBg
             : 'bottom-1 translate-y-0 text-base'} {isFocused ? 'text-amber-400' : ''}"
         >
           {label}
@@ -165,6 +177,7 @@
         {type}
         bind:value={search}
         data-value={input}
+        bind:this={inputRef}
         class="w-full bg-transparent outline-none"
         onfocus={() => (isFocused = true)}
         onblur={handleBlur}
@@ -178,7 +191,8 @@
       <!-- svelte-ignore a11y_no_static_element_interactions -->
       <div
         class="flex items-center justify-center self-stretch px-2 py-1
-              {isOnSuffixClickCallable ? 'cursor-pointer hover:text-amber-400' : ''}"
+              {isOnSuffixClickCallable ? 'cursor-pointer hover:text-amber-400' : ''}
+              {isOnSuffixClickCallable && isFocused ? 'border-amber-400' : ''}"
         onclick={onSuffixClick}
       >
         <span class="{icons[suffixIcon]} leading-none"></span>

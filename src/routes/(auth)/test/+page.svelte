@@ -1,28 +1,10 @@
-<!-- src\routes\(auth)\test\+page.svelte -->
-<script lang="ts">
-  import Button from '$lib/client/components/Button.svelte';
-  // import Form from '$lib/client/components/Form.svelte';
-  // import Input from '$lib/client/components/Input.svelte';
-  // const optionstring: string[] = [
-  //   'Seeni',
-  //   'Vasan',
-  //   'Sakthi',
-  //   'Siva',
-  //   'Sundar',
-  //   'Sankar',
-  //   'Vijay',
-  //   'Vignesh',
-  //   'Vimal',
-  //   'Vishnu',
-  // ];
-</script>
+<div class="relative mt-4 w-full pt-2">
+  <span class="absolute top-0 left-4 z-10 px-1 text-xs text-amber-400"> STRATEGIC LABEL </span>
 
-<section class="w-full border border-red-500 p-5">
-  <Button>Hello</Button>
-</section>
-<!-- <section class="w-full border border-red-500 p-5">
-  <Form className="w-xl">
-    <Input label="User" prefixIcon="user" options={optionstring} />
-    <Input label="Password" prefixIcon="keyRound" suffixIcon="eyeOff" options={optionstring} />
-  </Form>
-</section> -->
+  <div class="relative h-12 w-full rounded-b border-2 border-t-0 border-amber-400">
+    <div class="absolute top-0 left-0 w-3 border-t-2 border-amber-400"></div>
+    <div class="absolute top-0 right-0 left-28 border-t-2 border-amber-400"></div>
+
+    <input class="h-full w-full bg-transparent px-4 outline-none" />
+  </div>
+</div>
