@@ -15,12 +15,15 @@
     optionSnippet?: Snippet<[string, { index: number; isSelected: boolean }]>;
     onPrefixClick?: (e: MouseEvent) => void;
     onSuffixClick?: (e: MouseEvent) => void;
+    onKeyDown?: (e: KeyboardEvent) => void;
+    onKeyUp?: (e: KeyboardEvent) => void;
     caseMode?: stringCaseKey;
     options?: string[];
     searchMode?: 'includes' | 'startsWith' | 'endsWith';
     className?: string;
     labelBg?: string;
     autofocus?: boolean;
+    acceptCustomValue?: boolean;
   }
 
   // Constant Declare
@@ -36,6 +39,8 @@
     input = $bindable(''),
     onPrefixClick = emptyFunction,
     onSuffixClick = emptyFunction,
+    onKeyDown = emptyFunction,
+    onKeyUp = emptyFunction,
     caseMode = 'none',
     optionSnippet = undefined,
     options = [],
@@ -43,6 +48,7 @@
     className = '',
     labelBg = 'black',
     autofocus = false,
+    acceptCustomValue = false,
   }: Props = $props();
 
   // State Declare
@@ -79,9 +85,15 @@
       search = '';
       input = '';
     } else {
-      value = selectedOption;
-      search = selectedOption;
-      input = selectedOption;
+      if (acceptCustomValue) {
+        search = selectedOption ? selectedOption : search;
+        value = selectedOption ? selectedOption : search;
+        input = selectedOption ? selectedOption : search;
+      } else {
+        value = selectedOption;
+        search = selectedOption;
+        input = selectedOption;
+      }
     }
     isFocused = false;
   }
@@ -100,7 +112,7 @@
     input = option;
   }
 
-  async function handleKeydown(e: Event) {
+  async function handleKeydown(e: KeyboardEvent) {
     switch ((e as KeyboardEvent).key) {
       case 'Enter':
         if (canShowOptions && selectedOption) {
@@ -126,6 +138,7 @@
         }
         break;
     }
+    onKeyDown(e);
   }
 
   // Effect and Lifecycles
@@ -145,7 +158,7 @@
 </script>
 
 <div
-  class="group relative w-full appearance-none items-center rounded border-2 not-last:mb-4
+  class="group relative w-full appearance-none items-center rounded-md border-2 not-last:mb-4
   {isFocused ? 'border-amber-400' : ''} {canShowOptions ? 'rounded-b-none' : ''} {className}"
 >
   <!-- Main Part -->
@@ -182,7 +195,9 @@
         onfocus={() => (isFocused = true)}
         onblur={handleBlur}
         onkeydown={handleKeydown}
+        onkeyup={onKeyUp}
         oninput={handleInput}
+        autocomplete={type === 'password' ? 'current-password' : 'off'}
       />
     </div>
 
@@ -202,7 +217,9 @@
 
   <!-- Options -->
   {#if canShowOptions}
-    <div class="absolute -right-0.5 -left-0.5 z-20 rounded-b border-2 border-amber-400 bg-gray-900">
+    <div
+      class="absolute -right-0.5 -left-0.5 z-20 overflow-hidden rounded-b-md border-2 border-amber-400 bg-gray-900"
+    >
       {#each searchedOptions as option, index (index)}
         <!-- svelte-ignore a11y_no_static_element_interactions -->
         <div onmousedown={(e) => handleClickOption(e, option)}>

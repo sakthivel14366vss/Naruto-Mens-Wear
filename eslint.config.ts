@@ -13,6 +13,9 @@ import tsParser from '@typescript-eslint/parser';
 const gitignorePath = path.resolve(import.meta.dirname, '.gitignore');
 
 export default ts.config(
+  {
+    ignores: ['command.js', 'commands/**'],
+  },
   includeIgnoreFile(gitignorePath),
   js.configs.recommended,
   ...ts.configs.recommended,

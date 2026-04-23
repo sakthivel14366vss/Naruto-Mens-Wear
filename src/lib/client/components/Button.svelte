@@ -18,7 +18,7 @@
     red: 'bg-red-600 outline-red-700 hover:bg-red-700 focus:bg-red-700',
     green: 'bg-green-600 outline-green-700 hover:bg-green-700 focus:bg-green-700',
     amber: 'bg-amber-600 outline-amber-700 hover:bg-amber-700 focus:bg-amber-700',
-    gray: 'bg-gray-600 outline-gray-700 hover:bg-gray-700 focus:bg-gray-700',
+    gray: 'bg-gray-500 outline-gray-600 hover:bg-gray-600 focus:bg-gray-600',
   };
 
   // Props Declation
