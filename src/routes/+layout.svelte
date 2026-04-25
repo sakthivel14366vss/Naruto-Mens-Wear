@@ -5,9 +5,8 @@
 
   let { children } = $props();
 
-  const siteTitle = 'Naruto Mens Wear';
-  const description =
-    'An application designed to manage bills, stocks, and accounts for Naruto Mens Wear';
+  const siteTitle = 'NMW';
+  const description = 'An application designed to manage bills, stocks, and accounts for NMW';
 </script>
 
 <svelte:head>
