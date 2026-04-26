@@ -14,7 +14,7 @@ const gitignorePath = path.resolve(import.meta.dirname, '.gitignore');
 
 export default ts.config(
   {
-    ignores: ['command.js', 'commands/**'],
+    ignores: ['command.js', 'commands/**', 'seeds/**'],
   },
   includeIgnoreFile(gitignorePath),
   js.configs.recommended,

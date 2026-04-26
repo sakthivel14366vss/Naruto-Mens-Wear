@@ -1,3 +1,4 @@
+// commands\user.js
 import { MongoClient } from 'mongodb';
 import { loadEnv } from 'vite';
 import argon2 from 'argon2';
@@ -6,7 +7,7 @@ const env = loadEnv('development', process.cwd(), '');
 const { MONGODB_URI, DB_NAME } = env;
 
 if (!MONGODB_URI) {
-  console.error("Missing MONGODB_URI in environment.");
+  console.error('Missing MONGODB_URI in environment.');
   process.exit(1);
 }
 
@@ -62,10 +63,12 @@ const actions = {
     const [username] = args;
     if (!username) return console.error('Usage: user out <username>');
 
-    const result = await db.collection('users').updateOne(
-      { username },
-      { $set: { isOut: true, shouldResetPassword: true, updatedAt: new Date() } }
-    );
+    const result = await db
+      .collection('users')
+      .updateOne(
+        { username },
+        { $set: { isOut: true, shouldResetPassword: true, updatedAt: new Date() } },
+      );
 
     // updateOne returns matchedCount and modifiedCount
     if (result.matchedCount === 0) {
@@ -73,7 +76,7 @@ const actions = {
     }
 
     console.log(`Successfully marked user as out: ${username}`);
-  }
+  },
 };
 
 export default async function main() {
