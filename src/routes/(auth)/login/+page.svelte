@@ -1,12 +1,18 @@
+<!-- src\routes\(auth)\login\+page.svelte -->
 <script lang="ts">
   import Button from '$lib/client/components/Button.svelte';
   import Input from '$lib/client/components/Input.svelte';
   import { onMount } from 'svelte';
 
+  // Props Declaration
+  const { data } = $props();
+
   // State Declaration
   let showPassword = $state(false);
-  let usernameList = $state(['john_doe', 'jane_smith', 'alice_wonder']);
   let isCapsLockOn = $state(false);
+
+  // Derviced Declation
+  let usernameList = $derived(data.usernames);
 
   // Event Handlers
   function checkCapsLock(event: KeyboardEvent) {
@@ -37,10 +43,11 @@
     </div>
     <div>
       <div class="p-5 md:p-10">
-        <form action="">
+        <form action="?/login" method="POST">
           <h2 class="mb-5 text-center text-xl">Login</h2>
           <Input
             label="Username"
+            name="username"
             prefixIcon="user"
             className="not-last:mb-5"
             labelBg="bg-orange-950"
@@ -49,6 +56,7 @@
           />
           <Input
             label="Password"
+            name="password"
             prefixIcon="keyRound"
             suffixIcon={showPassword ? 'eye' : 'eyeOff'}
             onSuffixClick={() => (showPassword = !showPassword)}
@@ -62,7 +70,7 @@
           {/if}
 
           <div class="flex justify-center gap-3">
-            <Button color="green">Login</Button>
+            <Button color="green" type="submit">Login</Button>
             <Button color="gray">Forget Password</Button>
           </div>
         </form>

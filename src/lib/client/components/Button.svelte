@@ -4,6 +4,7 @@
   // Type Declration
   interface Props {
     href?: string;
+    type?: 'submit' | 'button';
     children: Snippet;
     color?: keyof typeof colors;
     onclick?: (e: Event) => void;
@@ -22,7 +23,13 @@
   };
 
   // Props Declation
-  let { href = '', children, onclick = emptyFunction, color = 'blue' }: Props = $props();
+  let {
+    href = '',
+    type = 'button',
+    children,
+    onclick = emptyFunction,
+    color = 'blue',
+  }: Props = $props();
 
   //Derived Declation
   const buttonColor = $derived(colors[color]);
@@ -34,7 +41,7 @@
     {@render children()}
   </a>
 {:else}
-  <button type="button" {onclick} class="{buttonColor} {commonClass}">
+  <button {type} {onclick} class="{buttonColor} {commonClass}">
     {@render children()}
   </button>
 {/if}

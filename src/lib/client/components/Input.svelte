@@ -8,6 +8,7 @@
   interface Props {
     type?: string;
     label?: string;
+    name: string;
     value?: string;
     input?: string;
     prefixIcon?: IconKey;
@@ -31,6 +32,7 @@
 
   // 2. Destructure from $props<Props>()
   let {
+    name = 'field',
     type = 'text',
     prefixIcon = undefined,
     suffixIcon = undefined,
@@ -115,6 +117,7 @@
   async function handleKeydown(e: KeyboardEvent) {
     switch ((e as KeyboardEvent).key) {
       case 'Enter':
+        e.preventDefault();
         if (canShowOptions && selectedOption) {
           value = selectedOption;
           search = selectedOption;
@@ -187,6 +190,7 @@
         </span>
       {/if}
       <input
+        {name}
         {type}
         bind:value={search}
         data-value={input}
