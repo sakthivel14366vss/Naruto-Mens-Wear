@@ -1,4 +1,5 @@
 // src/lib/feature/auth/AuthService.ts
+import AppError from '$lib/server/utils/response';
 import type { services } from '$lib/server/utils/serviceContainer';
 import type { UserService } from '../users/UserService';
 import type { LoginRequest } from './types';
@@ -12,6 +13,7 @@ export class AuthService {
 
   async login(data: LoginRequest) {
     const userService: UserService = await this.getUserService();
-    console.log('Attempting login for:', data.username);
+    const user = await userService.getUserByUserName(data.username);
+    if (!user) throw new AppError('Username not found');
   }
 }

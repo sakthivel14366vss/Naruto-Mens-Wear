@@ -1,7 +1,9 @@
 {
   "extends": "./.svelte-kit/tsconfig.json",
   "compilerOptions": {
+    "plugins": [{ "name": "svelte-check" }],
     "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
     "module": "esnext",
     "target": "esnext",
     "allowJs": true,
@@ -21,10 +23,11 @@
     "src/**/*.ts",
     "src/**/*.js",
     "src/**/*.svelte",
-    "svelte.config.js",
-    "eslint.config.ts",
+    "src/**/*.svelte.ts",
     ".svelte-kit/ambient.d.ts",
     ".svelte-kit/types/**/$types.d.ts",
+    "svelte.config.js",
+    "eslint.config.ts",
     "vite.config.ts"
   ]
 }

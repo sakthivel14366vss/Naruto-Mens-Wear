@@ -1,5 +1,6 @@
 // src/lib/server/utils/response.ts
 
+import { fail } from '@sveltejs/kit';
 import type { InsertOneResult, UpdateResult, DeleteResult, WithId, Document } from 'mongodb';
 
 // Define a union type for all possible Mongo mutation results
@@ -80,4 +81,16 @@ export function handleDBResult<T>(
 
   // 5. If it reaches here, it's a found document (WithId<T>)
   return result;
+}
+
+export type ResponsePayload = AppError | Error | unknown;
+
+export function handleResponse(payload: ResponsePayload) {
+  if (payload instanceof AppError) {
+    return fail(400, { success: false, message: payload.message });
+  } else if (payload instanceof Error) {
+    return fail(500, { success: false, message: payload.message });
+  } else {
+    return { success: true, data: payload };
+  }
 }

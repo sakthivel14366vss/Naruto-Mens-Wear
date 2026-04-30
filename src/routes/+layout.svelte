@@ -2,6 +2,7 @@
 <script lang="ts">
   import '../app.css';
   import favicon from '$lib/client/assets/favicon.svg';
+  import Toast from '$lib/client/components/Toast.svelte';
 
   let { children } = $props();
 
@@ -18,6 +19,7 @@
   <meta charset="utf-8" />
 </svelte:head>
 
+<Toast position="top-right" />
 <main
   id="main-content"
   class="border-white bg-linear-to-br from-black via-gray-900 to-gray-800 font-semibold text-white"

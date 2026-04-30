@@ -2,10 +2,11 @@
 <script lang="ts">
   import Button from '$lib/client/components/Button.svelte';
   import Input from '$lib/client/components/Input.svelte';
+  import { toastStore } from '$lib/common/store/toast.js';
   import { onMount } from 'svelte';
 
   // Props Declaration
-  const { data } = $props();
+  const { data, form } = $props();
 
   // State Declaration
   let showPassword = $state(false);
@@ -21,6 +22,7 @@
 
   // Lifecycle Hooks
   onMount(() => {
+    if (form?.message) toastStore.show(form.message, 'red');
     window.addEventListener('keydown', checkCapsLock);
     window.addEventListener('keyup', checkCapsLock);
     return () => {
