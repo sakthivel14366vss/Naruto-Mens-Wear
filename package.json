@@ -23,6 +23,7 @@
     "@sveltejs/vite-plugin-svelte": "^6.2.4",
     "@tailwindcss/vite": "^4.1.18",
     "@types/node": "^22",
+    "@types/qrcode": "^1.5.6",
     "eslint": "^10.0.3",
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-svelte": "^3.15.2",
@@ -40,6 +41,8 @@
   "dependencies": {
     "argon2": "^0.44.0",
     "jose": "^6.2.2",
-    "mongodb": "^7.1.1"
+    "mongodb": "^7.1.1",
+    "otplib": "^13.4.0",
+    "qrcode": "^1.5.4"
   }
 }
