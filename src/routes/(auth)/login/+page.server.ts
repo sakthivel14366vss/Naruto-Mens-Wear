@@ -4,6 +4,7 @@ import type { LoginRequest } from '$lib/feature/auth/types';
 import type { UserService } from '$lib/feature/users/UserService';
 import { handleResponse } from '$lib/server/utils/response';
 import { services } from '$lib/server/utils/serviceContainer';
+import { redirect, isRedirect } from '@sveltejs/kit';
 import type { Actions, PageServerLoad } from './$types';
 
 export const load: PageServerLoad = async () => {
@@ -14,13 +15,26 @@ export const load: PageServerLoad = async () => {
 };
 
 export const actions: Actions = {
-  login: async ({ request }) => {
+  login: async ({ request, cookies }) => {
     try {
       const formData = await request.formData();
       const payload = formDataToObject(formData) as unknown as LoginRequest;
       const authService: AuthService = await services.get('auth');
-      await authService.login(payload);
+      const token = await authService.login(payload);
+      cookies.set('session', token, {
+        path: '/',
+        httpOnly: true,
+        sameSite: 'strict',
+        secure: true,
+        maxAge: 60 * 60 * 15, // 15 hour
+      });
+      throw redirect(303, '/');
     } catch (error) {
+      // CRITICAL: Re-throw if it's a redirect
+      if (isRedirect(error)) throw error;
+
+      // Professional error handling:
+      // Ensure handleResponse returns a POJO via SvelteKit's fail()
       return handleResponse(error);
     }
   },

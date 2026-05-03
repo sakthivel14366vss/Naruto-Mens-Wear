@@ -2,7 +2,8 @@
 import type { Handle, ServerInit } from '@sveltejs/kit';
 import { sequence } from '@sveltejs/kit/hooks';
 import { connectDB } from '$lib/server/utils/mongodb';
-// import authMiddleware from '$lib/server/middleware/authMiddleware';
+import authMiddleware from '$lib/server/middleware/authMiddleware';
+import guardMiddleware from '$lib/server/middleware/guardMiddleware';
 // import testHandler from '$lib/server/middleware/testHandler';
 
 /**
@@ -26,8 +27,8 @@ export const init: ServerInit = async () => {
  * Primary Handle: Uses 'sequence' to pipe the event through multiple functions.
  * This is the standard "professional" way to manage multiple hooks.
  */
-export const handle: Handle = sequence();
-// export const handle: Handle = sequence(authMiddleware);
+export const handle: Handle = sequence(authMiddleware, guardMiddleware);
+// export const handle: Handle = sequence();
 // customRouteHandler,
 // Add more hooks here (auth, logging, etc.)
 // testHandler,
