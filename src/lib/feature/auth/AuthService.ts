@@ -29,6 +29,7 @@ export class AuthService {
       username: user.username,
       role: user.role,
       shouldResetPassword: user.shouldResetPassword,
+      isTotpConfigured: user.isTotpConfigured,
     };
     const token = await sign(payload, '15h');
     return token;

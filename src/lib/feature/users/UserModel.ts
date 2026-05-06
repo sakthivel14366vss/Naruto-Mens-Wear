@@ -7,6 +7,7 @@ export interface User extends Document {
   isActive: boolean;
   isOut: boolean;
   shouldResetPassword: boolean;
+  isTotpConfigured: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
