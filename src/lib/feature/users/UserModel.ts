@@ -8,6 +8,7 @@ export interface User extends Document {
   isOut: boolean;
   shouldResetPassword: boolean;
   isTotpConfigured: boolean;
+  tOtpSecret: string;
   createdAt: Date;
   updatedAt: Date;
 }

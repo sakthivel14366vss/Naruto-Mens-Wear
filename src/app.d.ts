@@ -9,6 +9,7 @@ declare global {
         username: string;
         role: string;
         shouldResetPassword: boolean;
+        isTotpConfigured: boolean;
       } | null;
     }
     // interface PageData {}

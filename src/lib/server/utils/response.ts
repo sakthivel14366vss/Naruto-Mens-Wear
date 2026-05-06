@@ -1,6 +1,6 @@
 // src/lib/server/utils/response.ts
 
-import { fail } from '@sveltejs/kit';
+import { fail, isRedirect } from '@sveltejs/kit';
 import type { InsertOneResult, UpdateResult, DeleteResult, WithId, Document } from 'mongodb';
 
 // Define a union type for all possible Mongo mutation results
@@ -93,4 +93,12 @@ export function handleResponse(payload: ResponsePayload) {
   } else {
     return { success: true, data: payload };
   }
+}
+
+export function handlePageCatch(error: ResponsePayload) {
+  // CRITICAL: Re-throw if it's a redirect
+  if (isRedirect(error)) throw error;
+  // Professional error handling:
+  // Ensure handleResponse returns a POJO via SvelteKit's fail()
+  return handleResponse(error);
 }

@@ -25,6 +25,7 @@ const authMiddleware: Handle = async ({ event, resolve }) => {
           username: payload.username,
           role: payload.role,
           shouldResetPassword: payload.shouldResetPassword,
+          isTotpConfigured: payload.isTotpConfigured,
         };
       }
     } catch {

@@ -1,6 +1,7 @@
 <!-- src\routes\(protected)\+page.svelte -->
 <script lang="ts">
   import naruto from '$lib/client/assets/naruto1.png';
+  import { PUBLIC_APP_NAME } from '$env/static/public';
 
   const CATEGORIES = [
     { name: 'Shirts', icon: '👔', href: '/inventory/shirts' },
@@ -12,7 +13,7 @@
 </script>
 
 <svelte:head>
-  <title>Dashboard | Naruto Mens Wear</title>
+  <title>Dashboard | {PUBLIC_APP_NAME}</title>
 </svelte:head>
 
 <section class="relative flex min-h-dvh flex-col items-center justify-center overflow-hidden">
@@ -31,7 +32,7 @@
     <h1
       class="bg-linear-to-r from-orange-400 to-purple-400 bg-clip-text text-6xl font-extrabold text-transparent drop-shadow-lg"
     >
-      Naruto Mens Wear
+      {PUBLIC_APP_NAME}
     </h1>
     <p class="mt-4 text-xl tracking-wide text-gray-300">
       Manage accounts in a simple and powerful way

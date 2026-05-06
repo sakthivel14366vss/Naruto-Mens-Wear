@@ -1,34 +1,42 @@
 // src/lib/server/middleware/guardMiddleware.ts
+import type { UserService } from '$lib/feature/users/UserService';
 import { redirect, type Handle } from '@sveltejs/kit';
+import { services } from '../utils/serviceContainer';
 
 const guardMiddleware: Handle = async ({ event, resolve }) => {
-  const { user } = event.locals;
+  const userId = event.locals.user?.userId || '';
+  const userService: UserService = await services.get('users');
+  const user = await userService.getUserById(userId);
   const path = event.url.pathname;
 
-  // 1. Define routes that do NOT require authentication
+  // 1. Routes and Assets definitions
   const isPublicRoute = path === '/login';
-
-  // 2. Define static assets or internal SvelteKit paths to ignore
   const isInternal = path.startsWith('/_app') || path.startsWith('/favicon.ico');
+  const isResetPath = path === '/reset-password';
 
   if (isInternal) {
     return resolve(event);
   }
 
-  // 3. The Guard Logic
-  if (!isPublicRoute && !user) {
-    // If it's not a public page and no user exists, send to login
+  // 2. Guest Guard: Redirect unauthenticated users to login
+  if (!user && !isPublicRoute) {
+    // Optional: If you want /reset-password to be strictly private,
+    // remove !isResetPath from the line above.
     throw redirect(303, '/login');
   }
 
-  if (path === '/login' && user) {
-    // If logged in user tries to access login page, send to root
+  // 3. Authenticated Guard: Redirect logged-in users away from login
+  if (user && isPublicRoute) {
     throw redirect(303, '/');
   }
 
-  // 4. Force password reset logic
-  if (user?.shouldResetPassword && path !== '/reset-password') {
-    throw redirect(303, '/reset-password');
+  // 4. Force Logic: ONLY run if user is logged in
+  if (user) {
+    const needsSetup = user.shouldResetPassword || !user.isTotpConfigured;
+
+    if (needsSetup && !isResetPath) {
+      throw redirect(303, '/reset-password');
+    }
   }
 
   return resolve(event);

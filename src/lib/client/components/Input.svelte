@@ -181,7 +181,10 @@
 
     <div class="relative w-full px-2 py-1">
       {#if label}
+        <!-- svelte-ignore a11y_click_events_have_key_events -->
+        <!-- svelte-ignore a11y_no_static_element_interactions -->
         <span
+          onclick={() => inputRef?.focus()}
           class="absolute z-10 transition-all {labelActive
             ? 'bottom-full translate-y-1/4 scale-90 px-1 text-sm ' + labelBg
             : 'bottom-1 translate-y-0 text-base'} {isFocused ? 'text-amber-400' : ''}"

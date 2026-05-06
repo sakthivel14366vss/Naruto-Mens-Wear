@@ -1,28 +1,38 @@
 // src\routes\(protected)\reset-password\+page.server.ts
-import { generate, generateSecret, generateURI, verify } from 'otplib';
-import QRCode from 'qrcode'; // TypeScript now knows exactly what this is!
-
-const currentStep = 2;
-let temp;
+import { PUBLIC_APP_NAME } from '$env/static/public';
+import { formDataToObject } from '$lib/common/utils/form.js';
+import { serializeDoc } from '$lib/common/utils/serializer.js';
+import type { AuthService } from '$lib/feature/auth/AuthService.js';
+import type { changePasswordRequest } from '$lib/feature/auth/types.js';
+import type { User } from '$lib/feature/users/UserModel.js';
+import type { UserService } from '$lib/feature/users/UserService.js';
+import { services } from '$lib/server/utils/serviceContainer.js';
+import type { Actions } from './$types';
+import { handlePageCatch } from '$lib/server/utils/response.js';
+import { redirect } from '@sveltejs/kit';
+import { generateSecret, generateURI } from 'otplib';
+import QRCode from 'qrcode';
 
 export const load = async ({ locals }) => {
-  console.log('genereate');
-  const secret = generateSecret();
-  const uri = generateURI({
-    issuer: 'Naruto Mens Wear',
-    label: 'Admin',
-    secret,
-  });
+  const userId = locals.user?.userId || '';
+  const userService: UserService = await services.get('users');
+  const user: User | null = await userService.getUserById(userId);
+  let currentStep = 1;
+  let qrCodeUrl = '';
+  let secret = '';
 
-  clearInterval(temp);
-  temp = setInterval(async () => {
-    const token = await generate({ secret });
-    const result = await verify({ secret, token });
-    console.log(token, result);
-  }, 1000);
+  if (user?.shouldResetPassword) currentStep = 1;
+  else if (!user?.shouldResetPassword && !user?.tOtpSecret) currentStep = 2;
+  else if (!user?.shouldResetPassword && user?.tOtpSecret) currentStep = 3;
 
-  try {
-    const qrCodeUrl = await QRCode.toDataURL(uri, {
+  if (currentStep === 2) {
+    secret = generateSecret();
+    const uri = generateURI({
+      issuer: PUBLIC_APP_NAME,
+      label: user?.username || 'User',
+      secret,
+    });
+    qrCodeUrl = await QRCode.toDataURL(uri, {
       margin: 2,
       width: 300,
       color: {
@@ -30,14 +40,45 @@ export const load = async ({ locals }) => {
         light: '#ffffff',
       },
     });
-    return {
-      qrCodeUrl,
-      secret,
-      currentStep,
-      authUser: locals.user,
-    };
-  } catch (err) {
-    console.error('QR Generation failed:', err);
-    return { status: 500 };
   }
+
+  return { currentStep, user: serializeDoc(user), secret, qrCodeUrl };
+};
+
+export const actions: Actions = {
+  changePassword: async ({ request, locals }) => {
+    try {
+      const userId = locals.user?.userId || '';
+      const data = formDataToObject(await request.formData()) as unknown as changePasswordRequest;
+      const authService: AuthService = await services.get('auth');
+      await authService.changePassword(userId, data);
+      throw redirect(301, '/reset-password');
+    } catch (error) {
+      return handlePageCatch(error);
+    }
+  },
+
+  configureTOTP: async ({ request, locals }) => {
+    try {
+      const userId = locals.user?.userId || '';
+      const data = formDataToObject(await request.formData()) as unknown as { secret: string };
+      const authService: AuthService = await services.get('auth');
+      await authService.updateTotpSecret(userId, data);
+      throw redirect(301, '/reset-password');
+    } catch (error) {
+      return handlePageCatch(error);
+    }
+  },
+
+  verifyTOTP: async ({ request, locals }) => {
+    try {
+      const userId = locals.user?.userId || '';
+      const data = formDataToObject(await request.formData()) as unknown as { totp: string };
+      const authService: AuthService = await services.get('auth');
+      await authService.verifyTOTP(userId, data);
+      throw redirect(301, '/');
+    } catch (error) {
+      return handlePageCatch(error);
+    }
+  },
 };
