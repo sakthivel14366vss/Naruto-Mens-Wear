@@ -1,35 +1,44 @@
+import formatter from '$lib/utils/formatter.js';
 import { getDb } from '$lib/utils/mongodb';
+import { responseInvalid, responseSuccess } from '$lib/utils/response.js';
 
-const parseNumber = (val) => {
-	const num = Number(val);
-	return isNaN(num) ? 0 : num;
-};
+export async function load({ depends }) {
+	depends('stock');
+	const db = await getDb();
+	const collection = db.collection('stock');
+
+	const result = await collection.find({}).toArray();
+	return { stocks: JSON.parse(JSON.stringify(result)) };
+}
 
 export const actions = {
-	async save({ request }) {
-		// 1. Establish DB Connection
+	save: async ({ request }) => {
 		const db = await getDb();
 		const collection = db.collection('stock');
 
-		// 2. Extract Data
 		const formData = await request.formData();
 		const data = {
-			barcode: formData.get('barcode'),
-			name: formData.get('name'),
-			description: formData.get('description'),
-			purchasePrice: parseNumber(formData.get('purchasePrice')),
-			salesPrice: parseNumber(formData.get('salesPrice')),
-			count: parseNumber(formData.get('count'))
+			barcode: formData.get('barcode')?.toString().trim() || '',
+			name: formData.get('name')?.toString().trim() || '',
+			description: formData.get('description')?.toString().trim() || '',
+			purchasePrice: formatter.number(formData.get('purchasePrice')),
+			salesPrice: formatter.number(formData.get('salesPrice')),
+			count: formatter.number(formData.get('count'))
 		};
 
-		// 3. (Optional) Insert data into MongoDB
-		// await collection.insertOne(data);
+		// Standardize returning specific field-level errors
+		if (!data.barcode) return responseInvalid('Barcode is required');
+		if (!data.name) return responseInvalid('Name is required');
+		const exist = await collection.findOne({
+			$or: [{ barcode: data.barcode }, { name: data.name }]
+		});
+		if (exist) {
+			const field = exist.barcode === data.barcode ? 'barcode' : 'name';
+			return responseInvalid(`${field.toUpperCase()} already exists in the system.`);
+		}
 
-		// 4. Debug: Log the actual array of documents
-		const allStock = await collection.find({}).toArray();
-		console.log(allStock);
+		const result = await collection.insertOne({ ...data, createdAt: new Date() });
 
-		// 5. Return success to the SvelteKit frontend
-		return { success: true };
+		return responseSuccess('Stock created');
 	}
 };

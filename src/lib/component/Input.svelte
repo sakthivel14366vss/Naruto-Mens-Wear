@@ -1,6 +1,8 @@
 <script>
+	import formatter from '$lib/utils/formatter';
+
 	let { key, ...props } = $props();
-	const placeholder = $derived(key[0].toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1'));
+	const placeholder = $derived(formatter.camelToTitle(key));
 </script>
 
 <input
