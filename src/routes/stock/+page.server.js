@@ -40,5 +40,9 @@ export const actions = {
 		const result = await collection.insertOne({ ...data, createdAt: new Date() });
 
 		return responseSuccess('Stock created');
+	},
+
+	delete: async ({ request }) => {
+		return responseSuccess({ test: 'ok' });
 	}
 };

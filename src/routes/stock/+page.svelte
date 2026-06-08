@@ -13,12 +13,33 @@
 		() => form,
 		() => invalidate('stock')
 	);
+
+	function onEdit(item) {
+		console.log('edit', item);
+	}
+	function onCreate() {
+		$hash = ['create'];
+	}
+	function onDelete(item) {
+		console.log('delete', item);
+	}
+
+	function handleKeyDown(event) {
+		const key = event.key?.toUpperCase();
+		switch (key) {
+			case 'ESCAPE':
+				$hash = [''];
+				break;
+		}
+	}
 </script>
 
-<Table items={data.stocks} />
+<svelte:window onkeydown={handleKeyDown} />
+
+<Table items={data.stocks} {onCreate} {onEdit} {onDelete} />
 
 <Form title="Stock">
-	<Input key="barcode" />
+	<Input key="barcode" autofocus />
 	<Input key="name" />
 	<Input key="description" />
 	<Input key="purchasePrice" />
