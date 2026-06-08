@@ -1,5 +1,6 @@
 import formatter from '$lib/utils/formatter.js';
 import { getDb } from '$lib/utils/mongodb';
+import parser from '$lib/utils/parser.js';
 import { responseInvalid, responseSuccess } from '$lib/utils/response.js';
 
 export async function load({ depends }) {
@@ -43,6 +44,13 @@ export const actions = {
 	},
 
 	delete: async ({ request }) => {
-		return responseSuccess({ test: 'ok' });
+		const db = await getDb();
+		const collection = db.collection('stock');
+
+		const formData = await request.formData();
+		const _id = parser.id(formData.get('_id'));
+
+		const result = await collection.deleteOne({ _id });
+		return responseSuccess('Stock deleted');
 	}
 };

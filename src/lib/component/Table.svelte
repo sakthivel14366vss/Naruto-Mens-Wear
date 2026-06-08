@@ -48,29 +48,33 @@
 <svelte:window onkeydown={handleKeyDown} />
 
 <div class="p-5">
-	<table class="w-full **:px-1">
-		<thead>
-			<tr
-				class="bg-black text-white *:border-r *:first:border-l *:first:border-l-black *:last:border-r-black"
-			>
-				<th>S.No</th>
-				{#each header as head}
-					<th>{head.title}</th>
-				{/each}
-			</tr>
-		</thead>
-		<tbody class="**:border">
-			{#each items as item, index}
+	{#if items.length}
+		<table class="w-full border-2 **:px-1">
+			<thead>
 				<tr
-					class={overRowIndex == index ? 'bg-black/20' : ''}
-					onmousemove={() => (overRowIndex = index)}
+					class="bg-black text-white *:border-r *:first:border-l *:first:border-l-black *:last:border-r-black"
 				>
-					<td>{index + 1}</td>
+					<th>S.No</th>
 					{#each header as head}
-						<td>{item[head.key] || ''}</td>
+						<th>{head.title}</th>
 					{/each}
 				</tr>
-			{/each}
-		</tbody>
-	</table>
+			</thead>
+			<tbody class="**:border">
+				{#each items as item, index}
+					<tr
+						class={overRowIndex == index ? 'bg-black/20' : ''}
+						onmousemove={() => (overRowIndex = index)}
+					>
+						<td>{index + 1}</td>
+						{#each header as head}
+							<td>{item[head.key] || ''}</td>
+						{/each}
+					</tr>
+				{/each}
+			</tbody>
+		</table>
+	{:else}
+		<div class="border-2 p-5 text-center text-black/50">No Data</div>
+	{/if}
 </div>

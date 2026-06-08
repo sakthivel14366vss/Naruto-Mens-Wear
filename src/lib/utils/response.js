@@ -9,9 +9,9 @@ export function responseInvalid(message) {
 }
 
 export function responseSuccess(message) {
-	return fail(400, {
+	return {
 		success: true,
 		responseAt: Date.now(),
 		message
-	});
+	};
 }

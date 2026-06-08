@@ -6,6 +6,7 @@
 	import { hash } from '$lib/utils/useHash.js';
 	import { invalidate } from '$app/navigation';
 	import { useFormHandler } from '$lib/utils/formHandler.svelte.js';
+	import triggerAction from '$lib/utils/triggerAction.js';
 
 	const { form = null, data } = $props();
 
@@ -20,8 +21,11 @@
 	function onCreate() {
 		$hash = ['create'];
 	}
-	function onDelete(item) {
-		console.log('delete', item);
+	async function onDelete(item) {
+		if (item) {
+			await triggerAction('?/delete', { _id: item._id });
+			invalidate('stock');
+		}
 	}
 
 	function handleKeyDown(event) {
