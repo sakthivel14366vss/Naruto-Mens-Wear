@@ -9,17 +9,22 @@
 	import triggerAction from '$lib/utils/triggerAction.js';
 
 	const { form = null, data } = $props();
+	let editableItem = $state(null);
 
 	useFormHandler(
 		() => form,
-		() => invalidate('stock')
+		() => {
+			invalidate('stock');
+			handleFormClose();
+		}
 	);
 
 	function onEdit(item) {
-		console.log('edit', item);
+		$hash = ['form'];
+		editableItem = item;
 	}
 	function onCreate() {
-		$hash = ['create'];
+		$hash = ['form'];
 	}
 	async function onDelete(item) {
 		if (item) {
@@ -28,11 +33,16 @@
 		}
 	}
 
+	function handleFormClose() {
+		$hash = [''];
+		editableItem = null;
+	}
+
 	function handleKeyDown(event) {
 		const key = event.key?.toUpperCase();
 		switch (key) {
 			case 'ESCAPE':
-				$hash = [''];
+				handleFormClose();
 				break;
 		}
 	}
@@ -42,11 +52,14 @@
 
 <Table items={data.stocks} {onCreate} {onEdit} {onDelete} />
 
-<Form title="Stock">
-	<Input key="barcode" autofocus />
-	<Input key="name" />
-	<Input key="description" />
-	<Input key="purchasePrice" />
-	<Input key="salesPrice" />
-	<Input key="count" />
+<Form title="Stock" isEdit={!!editableItem} close={handleFormClose}>
+	{#if editableItem?._id}
+		<input type="hidden" name="_id" value={editableItem._id} />
+	{/if}
+	<Input key="barcode" autofocus value={editableItem?.barcode} />
+	<Input key="name" value={editableItem?.name} />
+	<Input key="description" value={editableItem?.description} />
+	<Input key="purchasePrice" value={editableItem?.purchasePrice} />
+	<Input key="salesPrice" value={editableItem?.salesPrice} />
+	<Input key="count" value={editableItem?.count} />
 </Form>

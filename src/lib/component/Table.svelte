@@ -75,6 +75,6 @@
 			</tbody>
 		</table>
 	{:else}
-		<div class="border-2 p-5 text-center text-black/50">No Data</div>
+		<div class="border-2 border-black p-5 text-center text-black/50">No Data</div>
 	{/if}
 </div>

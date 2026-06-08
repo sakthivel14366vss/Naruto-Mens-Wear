@@ -2,6 +2,6 @@
 import { ObjectId } from 'mongodb';
 
 export default {
-	id: (val) => new ObjectId(val),
+	id: (val) => (ObjectId.isValid(val) ? new ObjectId(val) : null),
 	date: (val) => new Date(val)
 };

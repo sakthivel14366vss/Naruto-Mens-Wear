@@ -18,6 +18,7 @@ export const actions = {
 		const collection = db.collection('stock');
 
 		const formData = await request.formData();
+		const _id = parser.id(formData.get('_id'));
 		const data = {
 			barcode: formData.get('barcode')?.toString().trim() || '',
 			name: formData.get('name')?.toString().trim() || '',
@@ -30,17 +31,28 @@ export const actions = {
 		// Standardize returning specific field-level errors
 		if (!data.barcode) return responseInvalid('Barcode is required');
 		if (!data.name) return responseInvalid('Name is required');
-		const exist = await collection.findOne({
+		// 1. Build the uniqueness query
+		const uniqueQuery = {
 			$or: [{ barcode: data.barcode }, { name: data.name }]
-		});
+		};
+		// 2. If updating, exclude the current document from the search
+		if (_id) {
+			uniqueQuery._id = { $ne: _id };
+		}
+		const exist = await collection.findOne(uniqueQuery);
 		if (exist) {
 			const field = exist.barcode === data.barcode ? 'barcode' : 'name';
 			return responseInvalid(`${field.toUpperCase()} already exists in the system.`);
 		}
 
-		const result = await collection.insertOne({ ...data, createdAt: new Date() });
-
-		return responseSuccess('Stock created');
+		// 3. Perform the Database Operation
+		if (_id) {
+			await collection.updateOne({ _id }, { $set: { ...data, updatedAt: new Date() } });
+			return responseSuccess('Stock updated');
+		} else {
+			await collection.insertOne({ ...data, createdAt: new Date() });
+			return responseSuccess('Stock created');
+		}
 	},
 
 	delete: async ({ request }) => {
