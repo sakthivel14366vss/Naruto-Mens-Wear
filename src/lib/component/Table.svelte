@@ -21,28 +21,44 @@
 		if (['INPUT', 'BUTTON'].includes(event.target.tagName)) return;
 		switch (key) {
 			case 'ARROWUP':
+				event.preventDefault();
 				overRowIndex = overRowIndex - 1 >= 0 ? overRowIndex - 1 : overRowIndex;
 				break;
 			case 'ARROWDOWN':
+				event.preventDefault();
 				overRowIndex = overRowIndex + 1 <= items.length - 1 ? overRowIndex + 1 : overRowIndex;
 				break;
 			case 'HOME':
+				event.preventDefault();
 				overRowIndex = 0;
 				break;
 			case 'END':
+				event.preventDefault();
 				overRowIndex = items.length - 1;
 				break;
 			case 'ENTER':
+				event.preventDefault();
 				onEdit(items[overRowIndex]);
 				break;
 			case 'DELETE':
+				event.preventDefault();
 				onDelete(items[overRowIndex]);
 				break;
 			case ' ':
+				event.preventDefault();
 				onCreate();
 				break;
 		}
 	}
+
+	$effect(() => {
+		if (overRowIndex) {
+			activeRowEl.scrollIntoView({
+				behavior: 'smooth', // 'auto' for instant jump, 'smooth' for animated scrolling
+				block: 'nearest' // Prevents unnecessary jumping of the whole page
+			});
+		}
+	});
 </script>
 
 <svelte:window onkeydown={handleKeyDown} />
@@ -65,6 +81,7 @@
 					<tr
 						class={overRowIndex == index ? 'bg-black/20' : ''}
 						onmousemove={() => (overRowIndex = index)}
+						data-index={index}
 					>
 						<td>{index + 1}</td>
 						{#each header as head}
