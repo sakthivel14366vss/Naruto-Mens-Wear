@@ -51,7 +51,7 @@
 <svelte:window onkeydown={handleKeyDown} />
 
 <Table
-	items={Array.from({ length: 100 }).map(() => data.stocks[0])}
+	items={data.stocks[0] ? Array.from({ length: 100 }).map(() => data.stocks[0]) : []}
 	{onCreate}
 	{onEdit}
 	{onDelete}
