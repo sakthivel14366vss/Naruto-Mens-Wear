@@ -3,3 +3,8 @@
 * {
 	font-weight: 600;
 }
+
+* {
+	scrollbar-width: thin;
+	scrollbar-color: #888080 #f1f1f1;
+}

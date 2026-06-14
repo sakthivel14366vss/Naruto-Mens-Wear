@@ -60,23 +60,26 @@
 <svelte:window onkeydown={handleKeyDown} />
 
 <div class="h-dvh p-5">
-	<div class="h-full overflow-auto">
+	<div class="h-full overflow-auto  border-black">
 		{#if items.length}
-			<table class="w-full border-2 **:px-1">
-				<thead>
-					<tr
-						class="bg-black text-white *:border-r *:first:border-l *:first:border-l-black *:last:border-r-black"
-					>
+			<table class="w-full border-separate border-spacing-0 **:px-1">
+				<thead class="sticky top-0 z-10 text-white">
+					<tr class="bg-red-800 *:border-b *:border-black *:border-b-white">
+						<th colspan={header.length + 1}>Stock</th>
+					</tr>
+					<tr class="border-white bg-black *:border-r *:border-b">
 						<th>S.No</th>
 						{#each header as head}
-							<th>{head.title}</th>
+							<th class="last:border-r-black">{head.title}</th>
 						{/each}
 					</tr>
 				</thead>
-				<tbody class="**:border">
+				<tbody>
 					{#each items as item, index}
 						<tr
-							class={overRowIndex == index ? 'bg-black/20' : ''}
+							class="{overRowIndex == index
+								? 'bg-black/20'
+								: ''} *:border-r *:border-b *:border-black"
 							onmousemove={() => (overRowIndex = index)}
 							data-index={index}
 						>
@@ -89,7 +92,7 @@
 				</tbody>
 			</table>
 		{:else}
-			<div class="border-2 border-black p-5 text-center text-black/50">No Data</div>
+			<div class="border border-black p-5 text-center text-black/50">No Data</div>
 		{/if}
 	</div>
 </div>
