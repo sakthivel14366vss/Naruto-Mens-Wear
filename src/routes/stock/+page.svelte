@@ -50,12 +50,7 @@
 
 <svelte:window onkeydown={handleKeyDown} />
 
-<Table
-	items={data.stocks[0] ? Array.from({ length: 100 }).map(() => data.stocks[0]) : []}
-	{onCreate}
-	{onEdit}
-	{onDelete}
-/>
+<Table items={data.stocks} {onCreate} {onEdit} {onDelete} />
 
 <Form title="Stock" isEdit={!!editableItem} close={handleFormClose}>
 	{#if editableItem?._id}

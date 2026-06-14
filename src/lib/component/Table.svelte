@@ -5,6 +5,15 @@
 	const HIDDEN_KEYS = new Set(['_id', 'id', 'createdAt', 'updatedAt', '__v']);
 	let overRowIndex = $state(0);
 
+	const helperOption = [
+		{ serial: 1, description: 'To create new Record', key: 'Space' },
+		{ serial: 2, description: 'To edit existing Record', key: 'Enter' },
+		{ serial: 3, description: 'Go to Top', key: 'Home' },
+		{ serial: 4, description: 'Go to Bottom', key: 'End' },
+		{ serial: 5, description: 'To move up and down', key: 'Arrow Keys' },
+		{ serial: 6, description: 'To delete a record', key: 'Delete' }
+	];
+
 	const header = $derived(
 		items.length
 			? Object.keys(items[0])
@@ -42,7 +51,8 @@
 				break;
 			case 'DELETE':
 				event.preventDefault();
-				onDelete(items[overRowIndex]);
+				let confirmation = confirm('Are you sure to delete?');
+				if (confirmation) onDelete(items[overRowIndex]);
 				break;
 			case ' ':
 				event.preventDefault();
@@ -79,7 +89,7 @@
 						<tr
 							class="{overRowIndex == index
 								? 'bg-black/20'
-								: ''} scroll-mt-16 *:border-r *:border-b *:border-black last:*:border-b-0"
+								: ''} scroll-mt-16 *:border-r *:border-b *:border-black"
 							onmousemove={() => (overRowIndex = index)}
 							data-index={index}
 						>
@@ -92,7 +102,26 @@
 				</tbody>
 			</table>
 		{:else}
-			<div class="border border-black p-5 text-center text-black/50">No Data</div>
+			<div class="pt-10 text-center text-black/50">
+				<div class="mb-5 text-2xl">No Data Found</div>
+				<div>To manage records (create, edit, delete) use the Shortcut keys in the below table</div>
+				<table class="mx-auto mt-5 w-fit">
+					<tbody>
+						<tr class="bg-gray-200 *:border *:px-1">
+							<th>S.No</th>
+							<th>Description</th>
+							<th>Shortcut Key</th>
+						</tr>
+						{#each helperOption as option}
+							<tr class="*:border *:px-1">
+								<td>{option.serial}</td>
+								<td class="text-left">{option.description}</td>
+								<td>{option.key}</td>
+							</tr>
+						{/each}
+					</tbody>
+				</table>
+			</div>
 		{/if}
 	</div>
 </div>
