@@ -1,7 +1,7 @@
 <script>
 	import formatter from '$lib/utils/formatter';
 
-	let { key, hotKeys = {}, ...props } = $props();
+	let { key, hotKeys = {}, value = $bindable(), ...props } = $props();
 	const placeholder = $derived(formatter.camelToTitle(key));
 	let inputEl = $state(null);
 
@@ -12,7 +12,6 @@
 				hotKeys.ALL({ event, value: event.target.value, element: event.target, key });
 			}
 			if (Object.keys(hotKeys).includes(key)) {
-				event.preventDefault();
 				hotKeys[key]({ event, value: event.target.value, element: event.target, key });
 			}
 		}
@@ -22,6 +21,7 @@
 <svelte:window onkeydown={handleKeyDown} />
 <input
 	bind:this={inputEl}
+	bind:value
 	name={key}
 	{placeholder}
 	class="w-full rounded border-2 border-black/50 px-2 py-1 outline-none not-last:mb-4 focus:border-blue-500 focus:bg-blue-50 focus:placeholder:text-blue-400"

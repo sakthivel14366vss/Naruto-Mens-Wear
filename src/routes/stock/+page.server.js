@@ -30,6 +30,7 @@ export const actions = {
 
 		// Standardize returning specific field-level errors
 		if (!data.barcode) return responseInvalid('Barcode is required');
+		if (!data.barcode.startsWith('PR')) return responseInvalid("Barcode must starts with 'PR'");
 		if (!data.name) return responseInvalid('Name is required');
 		// 1. Build the uniqueness query
 		const uniqueQuery = {

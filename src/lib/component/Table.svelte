@@ -1,7 +1,16 @@
 <script>
 	import formatter from '$lib/utils/formatter.js';
+	import Button from './Button.svelte';
 
-	const { items = [], onEdit = () => {}, onCreate = () => {}, onDelete = () => {} } = $props();
+	const {
+		items = [],
+		title = 'Title',
+		titleStart = () => {},
+		titleEnd = () => {},
+		onEdit = () => {},
+		onCreate = () => {},
+		onDelete = () => {}
+	} = $props();
 	const HIDDEN_KEYS = new Set(['_id', 'id', 'createdAt', 'updatedAt', '__v']);
 	let overRowIndex = $state(0);
 
@@ -75,7 +84,13 @@
 			<table class="w-full border-separate border-spacing-0 **:px-1">
 				<thead class="sticky top-0 z-10 text-white">
 					<tr class="bg-red-800 *:border-b *:border-black *:border-b-white">
-						<th colspan={header.length + 1}>Stock</th>
+						<th colspan={header.length + 1}>
+							<div class="flex justify-between">
+								<div class="flex flex-1 justify-start">{@render titleStart()}</div>
+								<div class="flex flex-1 justify-center">{title}</div>
+								<div class="flex flex-1 justify-end">{@render titleEnd()}</div>
+							</div>
+						</th>
 					</tr>
 					<tr class="border-white bg-black *:border-r *:border-b-0">
 						<th>S.No</th>

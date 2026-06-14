@@ -50,7 +50,7 @@
 
 <svelte:window onkeydown={handleKeyDown} />
 
-<Table items={data.stocks} {onCreate} {onEdit} {onDelete} />
+<Table items={data.stocks} {onCreate} {onEdit} {onDelete} title="Stock" />
 
 <Form title="Stock" isEdit={!!editableItem} close={handleFormClose}>
 	{#if editableItem?._id}
