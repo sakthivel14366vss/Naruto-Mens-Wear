@@ -60,14 +60,14 @@
 <svelte:window onkeydown={handleKeyDown} />
 
 <div class="h-dvh p-5">
-	<div class="h-full overflow-auto  border-black">
+	<div class="h-full overflow-auto border-2 border-black">
 		{#if items.length}
 			<table class="w-full border-separate border-spacing-0 **:px-1">
 				<thead class="sticky top-0 z-10 text-white">
 					<tr class="bg-red-800 *:border-b *:border-black *:border-b-white">
 						<th colspan={header.length + 1}>Stock</th>
 					</tr>
-					<tr class="border-white bg-black *:border-r *:border-b">
+					<tr class="border-white bg-black *:border-r *:border-b-0">
 						<th>S.No</th>
 						{#each header as head}
 							<th class="last:border-r-black">{head.title}</th>
@@ -79,13 +79,13 @@
 						<tr
 							class="{overRowIndex == index
 								? 'bg-black/20'
-								: ''} *:border-r *:border-b *:border-black"
+								: ''} scroll-mt-16 *:border-r *:border-b *:border-black last:*:border-b-0"
 							onmousemove={() => (overRowIndex = index)}
 							data-index={index}
 						>
 							<td>{index + 1}</td>
 							{#each header as head}
-								<td>{item[head.key] || ''}</td>
+								<td class="last:border-r-0">{item[head.key] || ''}</td>
 							{/each}
 						</tr>
 					{/each}
