@@ -1,53 +1,18 @@
 <script>
-	import Input from '$lib/component/Input.svelte';
-	import Form from '$lib/component/Form.svelte';
 	import Table from '$lib/component/Table.svelte';
-	import Combo from '$lib/component/Combo.svelte';
 	import { toastStore } from '$lib/utils/toast.svelte.js';
 	import { hash } from '$lib/utils/useHash.js';
 	import { invalidate } from '$app/navigation';
 	import { useFormHandler } from '$lib/utils/formHandler.svelte.js';
 	import triggerAction from '$lib/utils/triggerAction.js';
-	import formatter from '$lib/utils/formatter.js';
+	import BillForm from './BillForm.svelte';
+	import { initialBillState } from './state.js'; // Path to your data structures
 
 	const DEFAULT_DISCOUNT = 20;
-
 	const { form = null, data } = $props();
 
-	// State Management
+	// Deep reactive object matching your core architecture layout
 	let editableItem = $state(getInitialItem());
-
-	// Helper to calculate unit discounted price
-	function calcDiscountedPrice(price, discount) {
-		return price - price * (discount / 100);
-	}
-
-	// --- Derived Calculations (Reactive for UI & Backend Payload) ---
-
-	// 1. Total Base Price before any discount
-	const grandTotalAmount = $derived(
-		editableItem.cart.reduce((sum, item) => sum + item.qty * item.price, 0)
-	);
-
-	// 2. Total Price after structural product discounts
-	const grandTotalDiscountedAmount = $derived(
-		editableItem.cart.reduce(
-			(sum, item) => sum + item.qty * calcDiscountedPrice(item.price, item.discount),
-			0
-		)
-	);
-
-	// 3. Absolute savings from structural discounts
-	const totalProductDiscountSaved = $derived(grandTotalAmount - grandTotalDiscountedAmount);
-
-	// 4. Safe conversion of manual extra discount input
-	const extraDiscountAmount = $derived(formatter.number(editableItem.extraDiscountAmount || 0));
-
-	// 5. Final aggregate checkout amount sent to backend
-	const finalAmount = $derived(grandTotalDiscountedAmount - extraDiscountAmount);
-
-	// 6. Cumulative savings amount (Product discounts + Extra overlay manual discount)
-	const cumulativeSavings = $derived(totalProductDiscountSaved + extraDiscountAmount);
 
 	useFormHandler(
 		() => form,
@@ -58,15 +23,16 @@
 	);
 
 	function getInitialItem() {
-		return { cart: [], barcode: '', extraDiscountAmount: 0 };
+		return structuredClone(initialBillState);
 	}
 
 	function onEdit(item) {
+		editableItem = structuredClone(item);
 		$hash = ['form'];
-		editableItem = item;
 	}
 
 	function onCreate() {
+		editableItem = getInitialItem();
 		$hash = ['form'];
 	}
 
@@ -89,32 +55,48 @@
 	}
 
 	function handleBarcode(barcode) {
-		if (barcode.startsWith('PR')) {
-			const product = data.stocks.find((s) => s.barcode === barcode);
+		if (!barcode) return;
+		const targetBarcode = barcode.trim().toUpperCase();
+
+		if (targetBarcode.startsWith('PR')) {
+			const product = data.stocks.find((s) => s.barcode === targetBarcode);
 
 			if (!product) {
-				return toastStore.show('Product Not Found', 'error');
+				return toastStore.show('Product Not Found in Stock Engine', 'error');
 			}
 
-			const existingItem = editableItem.cart.find((c) => c.barcode === barcode);
+			// Target the Purchase Cart array
+			const existingItem = editableItem.purchaseCart.itemList.find(
+				(c) => c.barcode === targetBarcode
+			);
 
 			if (existingItem) {
 				existingItem.qty += 1;
+				existingItem.amount = existingItem.qty * existingItem.price;
+				existingItem.discountedPrice =
+					existingItem.price - existingItem.price * (existingItem.discountPercentage / 100);
+				existingItem.discountedAmount = existingItem.qty * existingItem.discountedPrice;
 			} else {
-				editableItem.cart.push({
+				const discountedPrice = product.salesPrice - product.salesPrice * (DEFAULT_DISCOUNT / 100);
+				editableItem.purchaseCart.itemList.push({
 					barcode: product.barcode,
 					name: product.name,
+					category: product.category || 'Mens Wear',
+					qty: 1,
 					price: product.salesPrice,
-					discount: DEFAULT_DISCOUNT,
-					qty: 1
+					discountPercentage: DEFAULT_DISCOUNT,
+					discountedPrice: discountedPrice,
+					amount: product.salesPrice,
+					discountedAmount: discountedPrice
 				});
 			}
 
 			editableItem.barcode = '';
-		} else if (barcode.startsWith('BILL')) {
-			// Handle bill scanning logic here
+		} else if (targetBarcode.startsWith('BILL')) {
+			// Optional: Fetch matching bill data from server to populate return hooks or debt parameters
+			toastStore.show(`Linked Reference Invoice: ${targetBarcode}`, 'info');
 		} else {
-			toastStore.show('Unidentified Barcode', 'error');
+			toastStore.show('Unidentified Barcode Variant Checked', 'error');
 		}
 	}
 
@@ -137,104 +119,4 @@
 	{/snippet}
 </Table>
 
-<Form title="Bills" isEdit={!!editableItem?._id} close={handleFormClose}>
-	{#if editableItem?._id}
-		<input type="hidden" name="_id" value={editableItem._id} />
-	{/if}
-
-	<input type="hidden" name="cart" value={JSON.stringify(editableItem.cart)} />
-	<input type="hidden" name="grandTotalAmount" value={grandTotalAmount} />
-	<input type="hidden" name="grandTotalDiscountedAmount" value={grandTotalDiscountedAmount} />
-	<input type="hidden" name="extraDiscountAmount" value={extraDiscountAmount} />
-	<input type="hidden" name="finalAmount" value={finalAmount} />
-	<input type="hidden" name="totalSaved" value={cumulativeSavings} />
-
-	<Combo
-		key="barcode"
-		autofocus
-		bind:value={editableItem.barcode}
-		hotKeys={{ ALL: handleBarcodeKey }}
-	/>
-
-	{#if editableItem.cart.length}
-		<table class="mb-5 w-full">
-			<thead>
-				<tr class="bg-black/10 *:border *:px-1">
-					<th>S.No</th>
-					<th>Name</th>
-					<th>Qty</th>
-					<th>Price</th>
-					<th>Dis</th>
-					<th>Dis Price</th>
-					<th>Amount</th>
-					<th>Dis Amount</th>
-				</tr>
-			</thead>
-			<tbody>
-				{#each editableItem.cart as item, index (item.barcode)}
-					{@const disPrice = calcDiscountedPrice(item.price, item.discount)}
-					{@const amount = item.qty * item.price}
-					{@const disAmount = item.qty * disPrice}
-
-					<tr class="text-center *:border *:px-1">
-						<td>{index + 1}</td>
-						<td class="text-left">{item.name}</td>
-						<td>{item.qty}</td>
-						<td>{item.price}</td>
-						<td>{item.discount}%</td>
-						<td>{disPrice}</td>
-						<td>{amount}</td>
-						<td>{disAmount}</td>
-					</tr>
-				{/each}
-
-				<tr class="bg-black/5 text-center font-bold *:border *:px-1">
-					<td colspan="6" class="text-right">Grand Totals:</td>
-					<td>{grandTotalAmount}</td>
-					<td>
-						{grandTotalDiscountedAmount}
-						<span class="text-red-600">(-{totalProductDiscountSaved})</span>
-					</td>
-				</tr>
-			</tbody>
-		</table>
-	{/if}
-
-	{#if grandTotalAmount}
-		<div class="flex">
-			<div class="flex-1">
-				<label class="text-gray-500">Extra Discount Amount:</label>
-				<Input key="extraDiscountAmount" bind:value={editableItem.extraDiscountAmount} />
-			</div>
-			<div class="ml-auto flex-1 text-right">
-				<div>
-					<span class="text-sm text-gray-500">Grand Total:</span>
-					<span class="font-extrabold!">₹ {formatter.numberWithCommas(grandTotalAmount)}</span>
-				</div>
-				<div>
-					<span class="text-sm text-gray-500">Discounted Amount:</span>
-					<span class="font-extrabold!">
-						₹ {formatter.numberWithCommas(totalProductDiscountSaved)}
-					</span>
-				</div>
-				{#if extraDiscountAmount > 0}
-					<div>
-						<span class="text-sm text-gray-500">Extra Discount Amount:</span>
-						<span class="font-extrabold!">
-							₹ {formatter.numberWithCommas(extraDiscountAmount)}
-						</span>
-					</div>
-				{/if}
-				<div class="mb-5">
-					<span class="text-sm text-gray-500">Final Amount:</span>
-					<span class="font-extrabold!">
-						₹ {formatter.numberWithCommas(finalAmount)}
-						{#if extraDiscountAmount > 0}
-							<span class="text-red-600">(-{cumulativeSavings})</span>
-						{/if}
-					</span>
-				</div>
-			</div>
-		</div>
-	{/if}
-</Form>
+<BillForm bind:editableItem {handleFormClose} {handleBarcodeKey} />

@@ -1,3 +1,4 @@
+<!-- src\lib\component\Table.svelte -->
 <script>
 	import formatter from '$lib/utils/formatter.js';
 	import Button from './Button.svelte';
