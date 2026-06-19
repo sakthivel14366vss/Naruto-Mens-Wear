@@ -58,8 +58,9 @@
 	{/if}
 	<Input key="barcode" autofocus value={editableItem?.barcode} />
 	<Input key="name" value={editableItem?.name} />
+	<Input key="count" value={editableItem?.count} />
 	<Input key="description" value={editableItem?.description} />
 	<Input key="purchasePrice" value={editableItem?.purchasePrice} />
 	<Input key="salesPrice" value={editableItem?.salesPrice} />
-	<Input key="count" value={editableItem?.count} />
+	<Input key="discount" keySuffix="(in %)" value={editableItem?.discount} />
 </Form>

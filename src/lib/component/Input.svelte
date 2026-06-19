@@ -1,8 +1,8 @@
 <script>
 	import formatter from '$lib/utils/formatter';
 
-	let { key, value = $bindable(), ...props } = $props();
-	const placeholder = $derived(formatter.camelToTitle(key));
+	let { key, keySuffix, value = $bindable(), ...props } = $props();
+	const placeholder = $derived(formatter.camelToTitle(key) + (keySuffix ? ` ${keySuffix}` : ''));
 </script>
 
 <input

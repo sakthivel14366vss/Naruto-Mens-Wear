@@ -22,10 +22,11 @@ export const actions = {
 		const data = {
 			barcode: formData.get('barcode')?.toString().trim() || '',
 			name: formData.get('name')?.toString().trim() || '',
+			count: formatter.number(formData.get('count')),
 			description: formData.get('description')?.toString().trim() || '',
 			purchasePrice: formatter.number(formData.get('purchasePrice')),
 			salesPrice: formatter.number(formData.get('salesPrice')),
-			count: formatter.number(formData.get('count'))
+			discount: formatter.number(formData.get('discount'))
 		};
 
 		// Standardize returning specific field-level errors
