@@ -41,13 +41,14 @@
 			<!-- svelte-ignore a11y_click_events_have_key_events -->
 			<!-- svelte-ignore a11y_no_static_element_interactions -->
 			<div
-				class="flex w-30 cursor-pointer flex-col gap-3 rounded-lg border-2 bg-linear-to-r from-blue-100 to-red-100 p-3 hover:from-blue-200 hover:to-red-200"
+				class="flex w-35 cursor-pointer flex-col gap-3 rounded-lg border-2 bg-linear-to-r from-blue-100 to-red-100 p-3 hover:from-blue-200 hover:to-red-200"
 				onclick={() => navigations[menu.name]()}
 			>
 				<span class="text-4xl">{menu.emoji}</span>
 				<span>
 					<span class="font-extrabold! underline">{menu.name[0]}</span>{menu.name.slice(1)}
 				</span>
+				<span class="rounded bg-black/20 p-1 text-sm">Alt + {menu.name[0]}</span>
 			</div>
 		{/each}
 	</div>
