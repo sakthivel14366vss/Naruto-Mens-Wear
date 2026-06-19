@@ -5,18 +5,36 @@
 	import { toastStore } from '$lib/utils/toast.svelte';
 	import { hash } from '$lib/utils/useHash.js';
 
-	let { editableItem = $bindable(), handleFormClose, stocks } = $props();
+	let { item = $bindable(), handleFormClose, stocks } = $props();
 	let purchaseCartFocused = $state(true);
 
 	function handleBarcode({ value }) {
 		if (value.startsWith('PR')) {
 			const scannedItem = stocks.find((s) => s.barcode === value);
-			console.log(scannedItem);
+			const tempCart = structuredClone(purchaseCartFocused ? item.purchaseCart : item.returnCart);
+			const existingItem = tempCart.find((i) => i.barcode == value);
+			if (existingItem) {
+				existingItem.quantity += 1;
+				existingItem.grossAmount = existingItem.quantity * existingItem.unitPrice;
+				existingItem.netAmount = existingItem.quantity * existingItem.discountedUnitPrice;
+			} else {
+				tempCart.push({
+					barcode: scannedItem.barcode,
+					name: scannedItem.name,
+					quantity: 1,
+					unitPrice: scannedItem.salesPrice,
+					discountPercentage: scannedItem.discount, // LAST WORK
+					discountedUnitPrice: 0.0,
+					grossAmount: 0.0,
+					netAmount: 0.0
+				});
+			}
 		} else if (value.startsWith('BL')) {
 		} else {
 			toastStore.show('Unidentified Barcode', 'error');
 		}
 	}
+
 	function handleSwitchCart() {
 		purchaseCartFocused = !purchaseCartFocused;
 	}
@@ -24,17 +42,17 @@
 
 <Form close={handleFormClose} title="POS Billing Engine - Create New Bill">
 	<!-- Referance Bill Part -->
-	{#if editableItem.referenceBill}
+	{#if item.referenceBill}
 		<div class="mb-5 flex items-center justify-between rounded bg-black/20 px-4 py-2">
 			<span>
 				<span>Exchange Bill Against: </span>
 				<span class="font-bold! text-green-700">
-					{editableItem.referenceBill}
+					{item.referenceBill}
 				</span>
 			</span>
 			<button
 				class="-mt-1 cursor-pointer text-2xl text-red-700"
-				onclick={() => (editableItem.referenceBill = '')}
+				onclick={() => (item.referenceBill = '')}
 				type="button"
 			>
 				&times;
