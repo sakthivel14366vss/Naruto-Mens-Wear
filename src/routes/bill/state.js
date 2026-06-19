@@ -23,7 +23,6 @@ export const initialCartItemState = {
 	// 1. PRODUCT IDENTIFICATION
 	barcode: '', // Unique product identifier / SKU (e.g., "SKU-99234")
 	name: '', // Product title printed on the invoice (e.g., "Naruto Slim-Fit Shirt")
-	category: '', // Analytics and inventory classification (e.g., "Mens Wear")
 
 	// 2. QUANTITY
 	quantity: 1, // Number of units of this specific item
@@ -45,13 +44,14 @@ export const initialCartItemState = {
 export const initialBillState = {
 	// 1. ROOT INVOICE METADATA
 	metadata: {
-		invoiceNo: '', // Unique database transaction ID string (e.g., "INV-2026-0001")
+		billNo: '', // Unique database transaction ID string (e.g., "Bill-2026-0001")
 		dailySequenceCount: 0, // Daily token index sequence (Resets back to 1 every morning)
 		createdDate: '', // ISO Generation date footprint (YYYY-MM-DD)
-		referenceBills: [], // Array of linked historical Invoice IDs involved in an exchange/return
+		referenceBill: '', // Array of linked historical Invoice IDs involved in an exchange/return
+		referrerBill: '', // Array of linked historical Invoice IDs involved in an exchange/return
 		customer: {
 			name: '', // Customer name (Default to empty string for walk-in anonymous customers)
-			phone: '', // Customer contact number
+			phone: '' // Customer contact number
 		}
 	},
 
