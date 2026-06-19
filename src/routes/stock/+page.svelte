@@ -62,5 +62,5 @@
 	<Input key="description" value={editableItem?.description} />
 	<Input key="purchasePrice" value={editableItem?.purchasePrice} />
 	<Input key="salesPrice" value={editableItem?.salesPrice} />
-	<Input key="discount" placeholder="Discount(in %)" value={editableItem?.discount} />
+	<Input key="discount" placeholder="Discount (in %)" value={editableItem?.discount} />
 </Form>

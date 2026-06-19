@@ -73,8 +73,8 @@ export const initialBillState = {
 	// 3. THE ACCOUNTING & LEDGER ENGINE
 	ledger: {
 		// FINANCIAL INPUTS (Historical adjustments tracked outside the current carts)
-		aos: 0.0, // Retained deposit money previously paid by customer for this order
-		dos: 0.0, // Historical debt from previous credit purchases being cleared now
+		advanceAmount: 0.0, // Retained deposit money previously paid by customer for this order
+		balanceAmount: 0.0, // Historical debt from previous credit purchases being cleared now
 		extraDiscount: 0.0, // Additional manual discount applied on the entire bill (e.g., festive offer)
 
 		/**
@@ -90,6 +90,9 @@ export const initialBillState = {
 		netPayable: 0.0,
 
 		// PAYMENTS LOG
-		payments: [], // Dynamic collection of initialPaymentItemState objects processed right now
+		payments: [{ ...initialPaymentItemState }], // Dynamic collection of initialPaymentItemState objects processed right now
+		totalInflowAmount: 0.0,
+		totalOutflowAmount: 0.0,
+		pendingAmount: 0.0
 	}
 };
