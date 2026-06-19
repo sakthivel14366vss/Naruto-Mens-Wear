@@ -59,24 +59,23 @@ export const initialBillState = {
 	purchaseCart: {
 		lineItems: [], // Dynamic array of initialCartItemState objects leaving the store stock
 		subTotal: 0.0, // Combined gross sum of row-level item.grossAmount properties
-		itemDiscountTotal: 0.0, // Total currency value cut due to item-level percentage discounts
-		cartDiscountAmount: 0.0, // Manual flat cash discount subtracted over the entire cart at checkout
-		finalAmount: 0.0 // Net Purchase Demand: subTotal - itemDiscountTotal - cartDiscountAmount
+		totalDiscount: 0.0, // Total currency value cut due to item-level percentage discounts
+		finalAmount: 0.0 // Net Purchase Demand: subTotal - totalDiscount - cartDiscountAmount
 	},
 
 	returnCart: {
 		lineItems: [], // Dynamic array of initialCartItemState objects entering back into store stock
 		subTotal: 0.0, // Combined original gross value of returned elements
-		itemDiscountTotal: 0.0, // Combined original historical discount values
-		cartDiscountAdjustment: 0.0, // Flat offset if any historical cart discount adjustments are made
+		totalDiscount: 0.0, // Combined original historical discount values
 		finalAmount: 0.0 // Net Return Credit: Total asset value credited back to the customer
 	},
 
 	// 3. THE ACCOUNTING & LEDGER ENGINE
 	ledger: {
 		// FINANCIAL INPUTS (Historical adjustments tracked outside the current carts)
-		previousAdvancePaid: 0.0, // Retained deposit money previously paid by customer for this order
-		previousBalanceDue: 0.0, // Historical debt from previous credit purchases being cleared now
+		aos: 0.0, // Retained deposit money previously paid by customer for this order
+		dos: 0.0, // Historical debt from previous credit purchases being cleared now
+		extraDiscount: 0.0, // Additional manual discount applied on the entire bill (e.g., festive offer)
 
 		/**
 		 * RUNTIME CALCULATION RULES:
@@ -92,20 +91,5 @@ export const initialBillState = {
 
 		// PAYMENTS LOG
 		payments: [], // Dynamic collection of initialPaymentItemState objects processed right now
-
-		/**
-		 * RUNTIME CALCULATION RULE:
-		 * totalPaid = Sum of (payment.amount * payment.flowDirection) for all items in payments array
-		 */
-		totalPaid: 0.0,
-
-		/**
-		 * FINAL CLOSE-OUT BALANCING METRIC:
-		 * remainingBalance = netPayable - totalPaid
-		 * * POS VALIDATION RULES BEFORE INVOICE PRINT:
-		 * - For cash/card standard checkout: Must equal 0.00
-		 * - For partial/credit checkout: Must equal the logged customer debt entry
-		 */
-		remainingBalance: 0.0
 	}
 };

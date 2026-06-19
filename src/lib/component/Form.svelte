@@ -3,13 +3,20 @@
 	import { hash } from '$lib/utils/useHash';
 	import Button from './Button.svelte';
 
-	let { children = () => {}, title, isEdit = false, close = () => {}, ...props } = $props();
+	let {
+		children = () => {},
+		large = false,
+		title,
+		isEdit = false,
+		close = () => {},
+		...props
+	} = $props();
 </script>
 
 {#if $hash.segments.at(-1) == 'form'}
 	<div class="absolute inset-0 flex items-center justify-center bg-black/60">
 		<form
-			class="w-full max-w-xl rounded bg-white p-5"
+			class="w-full {large ? 'max-w-3xl' : 'max-w-xl'} rounded bg-white p-5"
 			action="?/save"
 			method="POST"
 			autocomplete="off"
