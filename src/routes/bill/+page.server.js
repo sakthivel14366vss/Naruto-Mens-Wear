@@ -70,7 +70,7 @@ export const actions = {
 				$set: {
 					name: data.metadata.customer.name,
 					phone: data.metadata.customer.phone,
-					updatedAt: new Date()
+					savedAt: new Date()
 				},
 				$inc: {
 					amount: outStanding
@@ -87,7 +87,7 @@ export const actions = {
 			const paymentsToInsert = data.ledger.payments.map((p) => ({
 				...p,
 				referenceBillId: _id,
-				createdAt: new Date()
+				savedAt: new Date()
 			}));
 			await paymentCollection.insertMany(paymentsToInsert);
 		}
