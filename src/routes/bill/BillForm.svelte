@@ -136,7 +136,9 @@
 	close={handleFormClose}
 	title="POS Billing Engine - Create New Bill"
 	large={true}
-	disableSubmitButton={item.ledger.pendingAmount !== 0 || item.ledger.netPayable === 0}
+	disableSubmitButton={item.ledger.pendingAmount !== 0 ||
+		(isCreditExist && !item.metadata.customer.name) ||
+		(item.metadata.customer.name && !/^\d{10}$/.test(item.metadata.customer.phone))}
 >
 	<input type="hidden" name="data" value={JSON.stringify(item)} />
 	{#if item.metadata?.referenceBill}
@@ -207,10 +209,19 @@
 		</table>
 	{/if}
 
-	<div class="mb-5 flex *:flex-1">
+	<div class="mb-5 flex gap-5 *:flex-1">
 		<div class="text-left">
-			<Input placeholder="Customer Name" bind:value={item.metadata.customer.name} />
+			<Input
+				placeholder="Customer Name"
+				bind:value={item.metadata.customer.name}
+				caseMode="capitalize"
+			/>
 			{#if item.metadata.customer.name}
+				<Input
+					placeholder="Customer Phone"
+					bind:value={item.metadata.customer.phone}
+					caseMode="capitalize"
+				/>
 				<div class="mb-4 flex gap-4">
 					<div>
 						<Input placeholder="Advance Amount" bind:value={item.ledger.advanceAmount} />
@@ -220,11 +231,14 @@
 					</div>
 				</div>
 			{/if}
-			{#if item.ledger.netPayable}
+			{#if item.ledger.netPayable && !item.metadata.customer.name}
 				<Input placeholder="Extra Discount" bind:value={item.ledger.extraDiscount} />
 			{/if}
 		</div>
 		<div class="text-right *:*:nth-[2]:font-bold!">
+			{#if item.ledger.netPayable && item.metadata.customer.name}
+				<Input placeholder="Extra Discount" bind:value={item.ledger.extraDiscount} />
+			{/if}
 			{#if item.purchaseCart.subTotal}
 				<div>
 					<span class="text-sm text-black/60">Total Cart Amount = ₹ </span>
@@ -302,6 +316,12 @@
 						<td>
 							<select
 								bind:value={payment.flowDirection}
+								onkeydown={(e) => {
+									if (e.key === 'Enter') {
+										e.preventDefault();
+										e.stopPropagation();
+									}
+								}}
 								class="w-full cursor-pointer rounded-xs outline-blue-700 focus:bg-blue-50 focus:text-blue-700 focus:outline-2"
 							>
 								<option value={1}>In Flow</option>
@@ -311,6 +331,12 @@
 						<td>
 							<select
 								bind:value={payment.paymentMode}
+								onkeydown={(e) => {
+									if (e.key === 'Enter') {
+										e.preventDefault();
+										e.stopPropagation();
+									}
+								}}
 								class="w-full cursor-pointer rounded-xs outline-blue-700 focus:bg-blue-50 focus:text-blue-700 focus:outline-2"
 							>
 								<option>Cash</option>
@@ -331,25 +357,32 @@
 		</table>
 	{/if}
 
-	{#if item.ledger.totalInflowAmount || item.ledger.totalOutflowAmount}
-		<div class="mb-5 flex *:flex-1">
-			<div class="text-left">
-				{#if item.ledger.pendingAmount !== 0}
-					<div
-						class="mb-3 ml-auto rounded border-2 border-amber-700 bg-amber-100 px-2 text-sm text-amber-700"
-					>
-						<span class="text-base">⚠&#xFE0E;</span> Pending Amount must be 0 to save a bill
-					</div>
-				{/if}
-				{#if isCreditExist && !item.metadata.customer.name}
-					<div
-						class="mb-3 ml-auto rounded border-2 border-amber-700 bg-amber-100 px-2 text-sm text-amber-700"
-					>
-						<span class="text-base">⚠&#xFE0E;</span> Credit Payment need customer name
-					</div>
-				{/if}
-			</div>
-			<div class="text-right">
+	<div class="mb-5 flex *:flex-1">
+		<div class="text-left">
+			{#if item.ledger.pendingAmount !== 0}
+				<div
+					class="mb-3 ml-auto rounded border-2 border-amber-700 bg-amber-100 px-2 text-sm text-amber-700"
+				>
+					<span class="text-base">⚠&#xFE0E;</span> Pending Amount must be 0 to save a bill
+				</div>
+			{/if}
+			{#if isCreditExist && !item.metadata.customer.name}
+				<div
+					class="mb-3 ml-auto rounded border-2 border-amber-700 bg-amber-100 px-2 text-sm text-amber-700"
+				>
+					<span class="text-base">⚠&#xFE0E;</span> Credit Payment need customer name
+				</div>
+			{/if}
+			{#if item.metadata.customer.name && !/^\d{10}$/.test(item.metadata.customer.phone)}
+				<div
+					class="mb-3 ml-auto rounded border-2 border-amber-700 bg-amber-100 px-2 text-sm text-amber-700"
+				>
+					<span class="text-base">⚠&#xFE0E;</span> Phone number is wrong OR missing
+				</div>
+			{/if}
+		</div>
+		<div class="text-right">
+			{#if item.ledger.totalInflowAmount || item.ledger.totalOutflowAmount}
 				<div>
 					<span class="text-sm text-black/60">Net Amount Payable = ₹</span>
 					<span class="text-blue-600">{formatter.numberWithCommas(item.ledger.netPayable)}</span>
@@ -376,7 +409,7 @@
 						{formatter.numberWithCommas(item.ledger.pendingAmount)}
 					</span>
 				</div>
-			</div>
+			{/if}
 		</div>
-	{/if}
+	</div>
 </Form>

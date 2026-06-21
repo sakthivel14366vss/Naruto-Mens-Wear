@@ -109,7 +109,7 @@
 							onmousemove={() => (overRowIndex = index)}
 							data-index={index}
 						>
-							<td>{index + 1}</td>
+							<td class="text-center">{index + 1}</td>
 							{#each header as head}
 								<td class="last:border-r-0">{item[head.key] || ''}</td>
 							{/each}

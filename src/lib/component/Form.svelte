@@ -29,7 +29,9 @@
 			<div class="mb-4 text-xl">{title}</div>
 			{@render children()}
 			<div class="flex gap-2">
-				<Button type="submit" disabled={disableSubmitButton}>{isEdit ? 'Update' : 'Create'}</Button>
+				<Button type="submit" isDisabled={disableSubmitButton}>
+					{isEdit ? 'Update' : 'Create'}
+				</Button>
 				<Button color="gray" onclick={close}>Cancel</Button>
 			</div>
 		</form>
