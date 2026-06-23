@@ -9,7 +9,7 @@
 	import { initialPaymentItemState } from './state';
 	import { reCalculateItem } from './calculation';
 
-	let { item = $bindable(), handleFormClose, stocks } = $props();
+	let { item = $bindable(), handleFormClose, stocks = [], outstandings = [] } = $props();
 	let purchaseCartFocused = $state(true);
 	let isCreditExist = $derived(item.ledger.payments.find((p) => p.paymentMode === 'Credit'));
 

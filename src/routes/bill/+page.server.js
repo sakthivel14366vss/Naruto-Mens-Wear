@@ -14,10 +14,12 @@ export async function load({ depends }) {
 	const db = await getDb();
 	const stockCollection = db.collection('stock');
 	const billCollection = db.collection('bill');
+	const outStandingCollection = db.collection('outstanding');
 
 	const stocks = await stockCollection.find({}).toArray();
 	const bills = await billCollection.find({}).toArray();
-	const response = { stocks, bills };
+	const outstandings = await outStandingCollection.find({}).toArray();
+	const response = { stocks, bills, outstandings };
 	return JSON.parse(JSON.stringify(response));
 }
 
@@ -28,7 +30,7 @@ export const actions = {
 		const stockCollection = db.collection('stock');
 		const billCollection = db.collection('bill');
 		const paymentCollection = db.collection('payment');
-		const outStandingCollection = db.collection('outStanding');
+		const outStandingCollection = db.collection('outstanding');
 
 		// 2. Preparing Data
 		const formData = await request.formData();

@@ -64,4 +64,9 @@
 	{/snippet}
 </Table>
 
-<BillForm bind:item={editableItem} {handleFormClose} stocks={data.stocks} />
+<BillForm
+	bind:item={editableItem}
+	{handleFormClose}
+	stocks={data.stocks}
+	outstandings={data.outstandings}
+/>

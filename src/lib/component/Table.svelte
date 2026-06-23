@@ -2,17 +2,19 @@
 <script>
 	import formatter from '$lib/utils/formatter.js';
 	import Button from './Button.svelte';
+	const emptyFunction = () => {};
 
 	const {
 		items = [],
 		title = 'Title',
-		titleStart = () => {},
-		titleEnd = () => {},
-		onEdit = () => {},
-		onCreate = () => {},
-		onDelete = () => {}
+		titleStart = emptyFunction,
+		titleEnd = emptyFunction,
+		onEdit = emptyFunction,
+		onCreate = emptyFunction,
+		onDelete = emptyFunction,
+		hiddenKeys = []
 	} = $props();
-	const HIDDEN_KEYS = new Set(['_id', 'id', 'createdAt', 'updatedAt', '__v']);
+	const HIDDEN_KEYS = new Set(['_id', 'id', 'createdAt', 'updatedAt', '__v', ...hiddenKeys]);
 	let overRowIndex = $state(0);
 
 	const helperOption = [
@@ -56,18 +58,24 @@
 				overRowIndex = items.length - 1;
 				break;
 			case 'ENTER':
-				event.preventDefault();
-				onEdit(items[overRowIndex]);
-				break;
+				if (emptyFunction != onEdit) {
+					event.preventDefault();
+					onEdit(items[overRowIndex]);
+					break;
+				}
 			case 'DELETE':
-				event.preventDefault();
-				let confirmation = confirm('Are you sure to delete?');
-				if (confirmation) onDelete(items[overRowIndex]);
-				break;
+				if (emptyFunction != onDelete) {
+					event.preventDefault();
+					let confirmation = confirm('Are you sure to delete?');
+					if (confirmation) onDelete(items[overRowIndex]);
+					break;
+				}
 			case ' ':
-				event.preventDefault();
-				onCreate();
-				break;
+				if (emptyFunction != onCreate) {
+					event.preventDefault();
+					onCreate();
+					break;
+				}
 		}
 	}
 

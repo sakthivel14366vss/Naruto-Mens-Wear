@@ -4,7 +4,8 @@
 	const menus = [
 		{ emoji: '📜', name: 'Bill' },
 		{ emoji: '💵', name: 'Payment' },
-		{ emoji: '📦', name: 'Stock' }
+		{ emoji: '📦', name: 'Stock' },
+		{ emoji: '💰', name: 'Outstanding' }
 	];
 
 	function handleKeyDown(event) {
@@ -19,13 +20,17 @@
 			case 'S':
 				navigations.Stock();
 				break;
+			case 'O':
+				navigations.Outstanding();
+				break;
 		}
 	}
 
 	const navigations = {
 		Stock: () => goto('/stock'),
 		Bill: () => goto('/bill'),
-		Payment: () => goto('/payment')
+		Payment: () => goto('/payment'),
+		Outstanding: () => goto('/outstanding')
 	};
 </script>
 
