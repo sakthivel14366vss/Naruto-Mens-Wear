@@ -10,6 +10,7 @@
 
 	function handleKeyDown(event) {
 		const key = event.key.toUpperCase();
+		if (['INPUT', 'TEXTAREA', 'SELECT'].includes(event.target.tagName)) return;
 		switch (key) {
 			case 'B':
 				navigations.Bill();

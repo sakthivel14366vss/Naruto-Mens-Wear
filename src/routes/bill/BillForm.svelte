@@ -120,6 +120,11 @@
 		purchaseCartFocused = !purchaseCartFocused;
 	}
 
+	function handleCustomerNameSelection(value) {
+		const outStanding = outstandings.find((os) => os.name == value);
+		if (outStanding) item.metadata.customer.phone = outStanding.phone;
+	}
+
 	function handlePaymentRowKey(event, index) {
 		const key = event.key.toUpperCase();
 		if (key == 'DELETE' || key == 'ARROWDOWN') {
@@ -160,7 +165,7 @@
 		</div>
 	{/if}
 
-	<Combo
+	<Input
 		placeholder="Barcode"
 		autofocus
 		hotKeys={{ ENTER: handleBarcode, ' ': handleSwitchCart }}
@@ -212,10 +217,13 @@
 
 	<div class="mb-5 flex gap-5 *:flex-1">
 		<div class="text-left">
-			<Input
+			<Combo
 				placeholder="Customer Name"
+				newValue="accept"
+				options={outstandings.map((os) => os.name)}
 				bind:value={item.metadata.customer.name}
 				caseMode="capitalize"
+				onBlur={handleCustomerNameSelection}
 			/>
 			{#if item.metadata.customer.name}
 				<Input
