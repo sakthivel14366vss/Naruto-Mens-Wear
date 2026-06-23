@@ -11,6 +11,7 @@
 
 	let { item = $bindable(), handleFormClose, stocks = [], outstandings = [] } = $props();
 	let purchaseCartFocused = $state(true);
+	let barcode = $state('');
 	let isCreditExist = $derived(item.ledger.payments.find((p) => p.paymentMode === 'Credit'));
 
 	function handleBarcode({ value }) {
@@ -47,7 +48,7 @@
 
 			item[cartKey].lineItems = tempCart;
 			// Clear input field
-			item.barcode = '';
+			barcode = '';
 			item = reCalculateItem(item);
 		} else if (value.startsWith('BL')) {
 			// Handle BL barcodes here
@@ -70,7 +71,7 @@
 
 			tempCart[serial - 1].quantity = qty;
 			item[cartKey].lineItems = tempCart;
-			item.barcode = '';
+			barcode = '';
 			item = reCalculateItem(item);
 		} else if (/^\d+-$/.test(value)) {
 			// Shortcut for delete item, e.g., "2-" means delete item at serial 2
@@ -86,7 +87,7 @@
 
 			tempCart.splice(serial - 1, 1);
 			item[cartKey].lineItems = tempCart;
-			item.barcode = '';
+			barcode = '';
 			item = reCalculateItem(item);
 		} else {
 			toastStore.show('Unidentified Barcode', 'error');
@@ -163,7 +164,7 @@
 		placeholder="Barcode"
 		autofocus
 		hotKeys={{ ENTER: handleBarcode, ' ': handleSwitchCart }}
-		bind:value={item.barcode}
+		bind:value={barcode}
 	/>
 
 	{#if item.purchaseCart?.lineItems && item.purchaseCart.lineItems.length}

@@ -15,11 +15,10 @@
 </script>
 
 {#if $hash.segments.at(-1) == 'form'}
-	<div class="absolute inset-0 flex items-center justify-center bg-black/60">
+	<div class="absolute inset-0 z-20 flex items-center justify-center bg-black/60">
 		<form
-			class="w-full {large
-				? 'max-w-3xl'
-				: 'max-w-xl'} max-h-[90vh] overflow-auto rounded bg-white p-5"
+			class="max-h-[90vh] w-full overflow-auto rounded bg-white p-5
+			{large ? 'max-w-3xl' : 'max-w-xl'}"
 			action="?/save"
 			method="POST"
 			autocomplete="off"

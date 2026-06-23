@@ -14,7 +14,15 @@
 		onDelete = emptyFunction,
 		hiddenKeys = []
 	} = $props();
-	const HIDDEN_KEYS = new Set(['_id', 'id', 'createdAt', 'updatedAt', '__v', ...hiddenKeys]);
+	const HIDDEN_KEYS = new Set([
+		'_id',
+		'id',
+		'createdAt',
+		'savedAt',
+		'updatedAt',
+		'__v',
+		...hiddenKeys
+	]);
 	let overRowIndex = $state(0);
 
 	const helperOption = [
@@ -87,16 +95,16 @@
 
 <svelte:window onkeydown={handleKeyDown} />
 
-<div class="h-dvh p-5">
-	<div class="h-full overflow-auto border-2 border-black">
+<div class="h-dvh p-5 pr-0">
+	<div class="h-full w-fit overflow-auto border-2 border-black">
 		{#if items.length}
-			<table class="w-full border-separate border-spacing-0 **:px-1">
+			<table class="border-separate border-spacing-0 **:px-1">
 				<thead class="sticky top-0 z-10 text-white">
 					<tr class="bg-red-800 *:border-b *:border-black *:border-b-white">
 						<th colspan={header.length + 1}>
 							<div class="flex justify-between">
 								<div class="flex flex-1 justify-start">{@render titleStart()}</div>
-								<div class="flex flex-1 justify-center">{title}</div>
+								<div class="flex flex-1 justify-center text-nowrap">{title}</div>
 								<div class="flex flex-1 justify-end">{@render titleEnd()}</div>
 							</div>
 						</th>
@@ -126,9 +134,11 @@
 				</tbody>
 			</table>
 		{:else}
-			<div class="pt-10 text-center text-black/50">
+			<div class="px-5 pt-10 text-center text-black/50">
 				<div class="mb-5 text-2xl">No Data Found</div>
-				<div>To manage records (create, edit, delete) use the Shortcut keys in the below table</div>
+				<div class="text-wrap">
+					To manage records (create, edit, delete) use the Shortcut keys in the below table
+				</div>
 				<table class="mx-auto mt-5 w-fit">
 					<tbody>
 						<tr class="bg-gray-200 *:border *:px-1">

@@ -87,8 +87,9 @@ export const actions = {
 		}
 		if (Array.isArray(data.ledger.payments) && data.ledger.payments.length > 0) {
 			const paymentsToInsert = data.ledger.payments.map((p) => ({
-				...p,
 				referenceBillId: _id,
+				referenceBillNo: data.metadata.billNo,
+				...p,
 				savedAt: new Date()
 			}));
 			await paymentCollection.insertMany(paymentsToInsert);
