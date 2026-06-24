@@ -7,8 +7,23 @@
 	import triggerAction from '$lib/utils/triggerAction.js';
 	import BillForm from './BillForm.svelte';
 	import { initialBillState } from './state.js';
+	import { getFormattedDate, getFormattedTime } from '$lib/utils/dateTime';
+	import formatter from '$lib/utils/formatter';
 
 	const { form = null, data } = $props();
+
+	const formattedBill = $derived(
+		data.bills.map((b) => ({
+			_id: b._id,
+			date: getFormattedDate(b.createdAt),
+			time: getFormattedTime(b.createdAt),
+			billCount: b.metadata.dailySequenceCount,
+			billNo: b.metadata.billNo,
+			customerName: b.metadata.customer.name,
+			netPayable: formatter.numberWithCommas(b.ledger.netPayable),
+			returnBill: b?.returnCart?.lineItems?.length ? 'Yes' : 'No'
+		}))
+	);
 
 	let editableItem = $state(getInitialItem());
 
@@ -25,19 +40,14 @@
 	}
 
 	function onEdit(item) {
-		editableItem = structuredClone(item);
+		const foundedItem = data.bills.find((b) => b._id === item._id);
+		editableItem = structuredClone(foundedItem);
 		$hash = ['form'];
 	}
 
 	function onCreate() {
 		editableItem = getInitialItem();
 		$hash = ['form'];
-	}
-
-	async function onDelete(item) {
-		if (item && (await triggerAction('?/delete', { _id: item._id }))) {
-			invalidate('stock');
-		}
 	}
 
 	function handleFormClose() {
@@ -54,7 +64,7 @@
 
 <svelte:window onkeydown={handleKeyDown} />
 
-<Table items={data.bills} {onCreate} {onEdit} {onDelete} title="Bills">
+<Table items={formattedBill} {onCreate} {onEdit} title="Bills" hiddenKeys={['_id']}>
 	{#snippet titleStart()}
 		23-06-2025
 	{/snippet}

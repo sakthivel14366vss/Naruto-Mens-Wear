@@ -1,3 +1,4 @@
+// src\routes\bill\state.js
 /**
  * Individual payment line-item structure inside the ledger.payments array.
  * Tracks cash drawer and digital inflows and outflows split by payment channel.

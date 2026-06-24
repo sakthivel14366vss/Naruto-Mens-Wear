@@ -146,6 +146,9 @@
 		(isCreditExist && !item.metadata.customer.name) ||
 		(item.metadata.customer.name && !/^\d{10}$/.test(item.metadata.customer.phone))}
 >
+	{#if item._id}
+		<input type="hidden" name="_id" value={item._id} />
+	{/if}
 	<input type="hidden" name="data" value={JSON.stringify(item)} />
 	{#if item.metadata?.referenceBill}
 		<div class="mb-5 flex items-center justify-between rounded bg-black/20 px-4 py-2">

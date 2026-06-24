@@ -69,21 +69,21 @@
 				if (emptyFunction != onEdit) {
 					event.preventDefault();
 					onEdit(items[overRowIndex]);
-					break;
 				}
+				break;
 			case 'DELETE':
 				if (emptyFunction != onDelete) {
 					event.preventDefault();
 					let confirmation = confirm('Are you sure to delete?');
 					if (confirmation) onDelete(items[overRowIndex]);
-					break;
 				}
+				break;
 			case ' ':
 				if (emptyFunction != onCreate) {
 					event.preventDefault();
 					onCreate();
-					break;
 				}
+				break;
 		}
 	}
 

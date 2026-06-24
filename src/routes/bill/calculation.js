@@ -1,3 +1,4 @@
+// src/routes/bill/calculation.js
 import formatter from '$lib/utils/formatter';
 
 export function reCalculateItem(item) {
@@ -50,84 +51,74 @@ export function reCalculateItem(item) {
 	const balanceAmountValue = formatter.number(item.ledger?.balanceAmount || 0);
 	const extraDiscountValue = formatter.number(item.ledger?.extraDiscount || 0);
 
-	// totalDebits = purchaseCart.finalAmount + balanceAmount (historical debt customer is clearing)
-	// totalCredits = returnCart.finalAmount + advanceAmount (retained balance offset) + extraDiscount
-	// netPayable = totalDebits - totalCredits
 	item.ledger.netPayable =
 		purchaseFinal + balanceAmountValue - (returnFinal + advanceAmountValue + extraDiscountValue);
-	item.ledger.totalInflowAmount = item.ledger.payments
+
+	item.ledger.totalInflowAmount = (item.ledger.payments || [])
 		.filter((x) => x.flowDirection == 1)
 		.reduce((sum, i) => formatter.number(i.amount) + sum, 0);
-	item.ledger.totalOutflowAmount = item.ledger.payments
+
+	item.ledger.totalOutflowAmount = (item.ledger.payments || [])
 		.filter((x) => x.flowDirection == -1)
 		.reduce((sum, i) => formatter.number(i.amount) + sum, 0);
+
 	item.ledger.pendingAmount =
 		item.ledger.netPayable - item.ledger.totalInflowAmount + item.ledger.totalOutflowAmount;
 	return item;
 }
 
 /**
- * Calculates the net stock changes from purchase and return carts.
- * * - A negative number means stock leaves the store (Decrease).
- * - A positive number means stock enters the store (Increase).
- * * @param {Object} purchaseCart - The purchase cart containing lineItems
- * @param {Object} returnCart - The return cart containing lineItems
- * @returns {Object} Key-value pairs of barcode to net stock delta changes
+ * Computes net stock delta changes combining old and new bill states.
+ * Reverts old bill impact and applies new bill impact in one step.
  */
-export function getStockSummary(purchaseCart, returnCart) {
+export function getStockDeltaSummary(oldBill, newBill) {
 	const stockSummary = {};
 
-	// 1. Process Purchases (Stock decreases -> Negative Impact)
-	const purchaseItems = purchaseCart?.lineItems || [];
-	purchaseItems.forEach((item) => {
-		if (!item.barcode) return; // Skip if barcode is empty
+	// 1. Revert Old Bill (Old Purchase decreases stock -> so revert adds it back. Old Return increases -> so revert removes it)
+	if (oldBill) {
+		(oldBill.purchaseCart?.lineItems || []).forEach((item) => {
+			if (item.barcode)
+				stockSummary[item.barcode] = (stockSummary[item.barcode] || 0) + item.quantity;
+		});
+		(oldBill.returnCart?.lineItems || []).forEach((item) => {
+			if (item.barcode)
+				stockSummary[item.barcode] = (stockSummary[item.barcode] || 0) - item.quantity;
+		});
+	}
 
-		stockSummary[item.barcode] = (stockSummary[item.barcode] || 0) - item.quantity;
-	});
-
-	// 2. Process Returns (Stock increases -> Positive Impact)
-	const returnItems = returnCart?.lineItems || [];
-	returnItems.forEach((item) => {
-		if (!item.barcode) return; // Skip if barcode is empty
-
-		stockSummary[item.barcode] = (stockSummary[item.barcode] || 0) + item.quantity;
-	});
+	// 2. Apply New Bill (New Purchase decreases stock. New Return increases stock)
+	if (newBill) {
+		(newBill.purchaseCart?.lineItems || []).forEach((item) => {
+			if (item.barcode)
+				stockSummary[item.barcode] = (stockSummary[item.barcode] || 0) - item.quantity;
+		});
+		(newBill.returnCart?.lineItems || []).forEach((item) => {
+			if (item.barcode)
+				stockSummary[item.barcode] = (stockSummary[item.barcode] || 0) + item.quantity;
+		});
+	}
 
 	return stockSummary;
 }
 
 /**
- * Calculates the final consolidated outstanding amount for a customer.
- * * MATH RULE:
- * Final Balance = (balanceAmount + totalOutflow) - (advanceAmount + totalInflow)
- * * CRITERIA:
- * Only payments with amountType === 'Credit' are factored into totalInflow/totalOutflow.
- * * SIGN INTERPRETATION:
- * * Positive (+) value = Customer owes the store money (Debit balance)
- * * Negative (-) value = Store owes the customer money (Credit balance / Overpayment)
- * * @param {number} advanceAmount - Previous deposit money paid by customer
- * @param {number} balanceAmount - Historical debt being brought forward
- * @param {Array} payments - Array of payment items containing { amount, flowDirection, amountType }
- * @returns {number} Single outstanding balance rounded to 2 decimal places
+ * Calculates the total net "Credit/Outstanding" value generated *by this specific bill session*.
+ * Formula: Credit Inflows (Customer owes more) - Credit Outflows (Store owes customer back)
  */
-export function getOutStanding(advanceAmount, balanceAmount, payments) {
-	advanceAmount = formatter.number(advanceAmount);
-	balanceAmount = formatter.number(balanceAmount);
+export function getBillCreditContribution(bill) {
+	if (!bill || !bill.ledger || !Array.isArray(bill.ledger.payments)) return 0;
 
-	let totalInflow = 0.0;
-	let totalOutflow = 0.0;
+	let totalCreditInflow = 0;
+	let totalCreditOutflow = 0;
 
-	if (Array.isArray(payments)) {
-		payments.forEach((payment) => {
-			if (payment.paymentMode === 'Credit') {
-				const amt = parseFloat(payment.amount) || 0.0;
-				if (payment.flowDirection === 1) {
-					totalInflow += amt;
-				} else if (payment.flowDirection === -1) {
-					totalOutflow += amt;
-				}
-			}
-		});
-	}
-	return totalInflow + advanceAmount - (totalOutflow + balanceAmount);
+	bill.ledger.payments.forEach((p) => {
+		if (p.paymentMode === 'Credit') {
+			const amt = parseFloat(p.amount) || 0;
+			if (p.flowDirection === 1) totalCreditInflow += amt;
+			else if (p.flowDirection === -1) totalCreditOutflow += amt;
+		}
+	});
+
+	// Net addition to what customer owes from this transaction
+	return totalCreditInflow - totalCreditOutflow;
 }
