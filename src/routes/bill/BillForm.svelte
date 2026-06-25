@@ -13,6 +13,8 @@
 	let purchaseCartFocused = $state(true);
 	let barcode = $state('');
 	let isCreditExist = $derived(item.ledger.payments.find((p) => p.paymentMode === 'Credit'));
+	let advanceAmountExist = $state(0);
+	let balanceAmountExist = $state(0);
 
 	function handleBarcode({ value }) {
 		if (value.startsWith('PR')) {
@@ -122,7 +124,14 @@
 
 	function handleCustomerNameSelection(value) {
 		const outStanding = outstandings.find((os) => os.name == value);
-		if (outStanding) item.metadata.customer.phone = outStanding.phone;
+		if (outStanding) {
+			item.metadata.customer.phone = outStanding.phone;
+			if (outStanding.amount > 0) balanceAmountExist = outStanding.amount;
+			else advanceAmountExist = outStanding.amount * -1;
+		} else {
+			balanceAmountExist = 0;
+			advanceAmountExist = 0;
+		}
 	}
 
 	function handlePaymentRowKey(event, index) {
@@ -140,8 +149,9 @@
 
 <Form
 	close={handleFormClose}
-	title="POS Billing Engine - Create New Bill"
+	title={`POS Billing Engine - ${item._id ? 'Update' : 'Create'} Bill ${item._id && item.metadata.billNo ? ` - ${item.metadata.billNo}` : ''}`}
 	large={true}
+	isEdit={item._id}
 	disableSubmitButton={item.ledger.pendingAmount !== 0 ||
 		(isCreditExist && !item.metadata.customer.name) ||
 		(item.metadata.customer.name && !/^\d{10}$/.test(item.metadata.customer.phone))}
@@ -237,9 +247,15 @@
 				<div class="mb-4 flex gap-4">
 					<div>
 						<Input placeholder="Advance Amount" bind:value={item.ledger.advanceAmount} />
+						<span class="-mt-3 block text-green-700">
+							Advance: {formatter.numberWithCommas(advanceAmountExist)}
+						</span>
 					</div>
 					<div>
 						<Input placeholder="Balance Amount" bind:value={item.ledger.balanceAmount} />
+						<span class="-mt-3 block text-red-700">
+							Balance: {formatter.numberWithCommas(balanceAmountExist)}
+						</span>
 					</div>
 				</div>
 			{/if}
