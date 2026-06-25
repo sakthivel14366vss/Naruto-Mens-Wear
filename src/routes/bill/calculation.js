@@ -108,6 +108,9 @@ export function getStockDeltaSummary(oldBill, newBill) {
 export function getBillCreditContribution(bill) {
 	if (!bill || !bill.ledger || !Array.isArray(bill.ledger.payments)) return 0;
 
+	const balanceAmount = parseFloat(bill.ledger.balanceAmount)
+	const advanceAmount = parseFloat(bill.ledger.advanceAmount)
+
 	let totalCreditInflow = 0;
 	let totalCreditOutflow = 0;
 
@@ -120,5 +123,5 @@ export function getBillCreditContribution(bill) {
 	});
 
 	// Net addition to what customer owes from this transaction
-	return totalCreditInflow - totalCreditOutflow;
+	return (totalCreditInflow + advanceAmount) - (totalCreditOutflow + balanceAmount);
 }

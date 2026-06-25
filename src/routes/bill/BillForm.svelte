@@ -115,6 +115,7 @@
 		// 3. Wrap the calculation in untrack so its internal writes don't re-trigger the effect
 		untrack(() => {
 			item = reCalculateItem(item);
+			handleCustomerNameSelection(item.metadata.customer.name);
 		});
 	});
 
@@ -232,7 +233,6 @@
 		<div class="text-left">
 			<Combo
 				placeholder="Customer Name"
-				newValue="accept"
 				options={outstandings.map((os) => os.name)}
 				bind:value={item.metadata.customer.name}
 				caseMode="capitalize"
