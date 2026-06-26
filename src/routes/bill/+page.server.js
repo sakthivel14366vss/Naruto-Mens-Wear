@@ -31,7 +31,7 @@ export const actions = {
 		const formData = await request.formData();
 		const billNo = formData.get('barcode');
 
-		const bill = await billCollection.findOne({ "metadata.billNo": billNo });
+		const bill = await billCollection.findOne({ 'metadata.billNo': billNo });
 		return JSON.parse(JSON.stringify(bill));
 	},
 	save: async function ({ request }) {
@@ -87,6 +87,14 @@ export const actions = {
 
 		// 5. Execute downstream inventory and balance registers
 		await processBillInventoryAndLedgers(db, oldBill, newBill);
+
+		// 6. Update Referer bill
+		if (item.metadata?.referenceBill) {
+			await updateReferByBill({
+				currentBilNo: data.metadata.billNo,
+				refererBillNo: data.metadata.referenceBill
+			});
+		}
 
 		return { success: true };
 	}
@@ -155,4 +163,13 @@ async function processBillInventoryAndLedgers(db, oldBill, newBill) {
 		}));
 		await paymentCollection.insertMany(paymentsToInsert);
 	}
+}
+
+async function updateReferByBill({ currentBilNo, refererBillNo }) {
+	await billCollection.updateOne(
+		// 1. Find the original bill by its actual bill number field
+		{ 'metadata.billNo': refererBillNo },
+		// 2. Set the new bill number that was generated from it
+		{ $set: { 'metadata.referByBill': currentBilNo } }
+	);
 }

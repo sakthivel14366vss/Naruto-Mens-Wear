@@ -49,6 +49,7 @@ export const initialBillState = {
 		dailySequenceCount: 0, // Daily token index sequence (Resets back to 1 every morning)
 		createdDate: '', // ISO Generation date footprint (YYYY-MM-DD)
 		referenceBill: '', // Array of linked historical Invoice IDs involved in an exchange/return
+		referByBill: '',
 		customer: {
 			name: '', // Customer name (Default to empty string for walk-in anonymous customers)
 			phone: '' // Customer contact number

@@ -127,7 +127,7 @@
 
 <div class="relative not-last:mb-4">
 	<input
-		class="w-full rounded border-2 border-black/50 px-2 py-1 outline-none focus:border-blue-500 focus:bg-blue-50 focus:placeholder:text-blue-400
+		class="w-full rounded border-2 border-black/50 px-2 py-1 outline-none focus:border-blue-600 focus:bg-blue-50 focus:placeholder:text-blue-500
         {options.length && showOptions && filtered.length ? 'rounded-b-none' : ''}"
 		type="text"
 		placeholder={derivedPlaceholder}
@@ -141,7 +141,7 @@
 
 	{#if options.length && showOptions && filtered.length}
 		<ul
-			class="absolute top-full z-10 w-full divide-y divide-black/50 rounded border-2 border-blue-500 bg-blue-50
+			class="absolute top-full z-10 w-full divide-y divide-black/50 rounded border-2 border-blue-600 bg-blue-50
             {options.length && showOptions ? 'rounded-t-none border-t-0' : ''}"
 		>
 			{#each filtered as option, index}

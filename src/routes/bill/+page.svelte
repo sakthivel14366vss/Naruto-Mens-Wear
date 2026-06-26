@@ -21,7 +21,8 @@
 			billNo: b.metadata.billNo,
 			customerName: b.metadata.customer.name,
 			netPayable: formatter.numberWithCommas(b.ledger.netPayable),
-			returnBill: b?.returnCart?.lineItems?.length ? 'Yes' : 'No'
+			exchangeBill: b?.returnCart?.lineItems?.length ? 'Yes' : 'No',
+			exchangeClaimed: b.isReturnClaimed ? 'Yes' : 'No'
 		}))
 	);
 
@@ -83,10 +84,12 @@
 	{/snippet}
 </Table>
 
-<BillForm
-	bind:item={editableItem}
-	{handleFormClose}
-	{handleBillBarCode}
-	stocks={data.stocks}
-	outstandings={data.outstandings}
-/>
+{#if $hash.segments.at(-1) === 'form'}
+	<BillForm
+		bind:item={editableItem}
+		{handleFormClose}
+		{handleBillBarCode}
+		stocks={data.stocks}
+		outstandings={data.outstandings}
+	/>
+{/if}

@@ -23,49 +23,70 @@
 	let isCreditExist = $derived(item.ledger.payments.find((p) => p.paymentMode === 'Credit'));
 	let advanceAmountExist = $state(0);
 	let balanceAmountExist = $state(0);
+	let barcodeElement = $state(null);
+	let referenceBillData = $state(null);
 
 	let isTodayBill = $derived(
 		item?._id
 			? new Date(item.createdAt).toLocaleDateString() === new Date().toLocaleDateString()
 			: true
 	);
-	let isEligibaleToReturn = $derived(
+	let isReturnBill = $derived(item.metadata?.referenceBill);
+	let isEligibleToReturn = $derived(
 		item?._id
 			? (() => {
 					const creationDate = new Date(item.createdAt);
 					const expiryDate = new Date(creationDate);
 					expiryDate.setDate(creationDate.getDate() + Number(env.PUBLIC_BILL_RETURN_ELIGABLE));
 					return expiryDate >= new Date();
-				})()
+				})() && !item.metadata.referenceBill
 			: false
 	);
 
 	function handleBarcode({ value }) {
+		barcode = '';
 		if (value.startsWith('PR')) {
 			const scannedItem = stocks.find((s) => s.barcode === value);
-			if (!scannedItem) {
-				toastStore.show('Item not found in stocks', 'error');
-				return;
-			} else if (!scannedItem.count) {
-				toastStore.show('Product Out of Stock', 'error');
-				return;
-			}
-
 			const cartKey = purchaseCartFocused ? 'purchaseCart' : 'returnCart';
 			const currentLineItems = $state.snapshot(item[cartKey]?.lineItems) || [];
 			const tempCart = [...currentLineItems];
-
 			const existingItem = tempCart.find((i) => i.barcode === value);
+			const purchasedItem = referenceBillData?.purchaseCart?.lineItems?.find(
+				(i) => i.barcode === value
+			);
 
+			// Validation
+			if (purchaseCartFocused) {
+				if (!scannedItem) {
+					toastStore.show('Item not found in stocks', 'error');
+					return;
+				} else if (!scannedItem.count) {
+					toastStore.show('Product Out of Stock', 'error');
+					return;
+				}
+			} else {
+				if (!purchasedItem) {
+					toastStore.show('User can not return non purchased item', 'error');
+					return;
+				}
+				if (existingItem?.quantity > purchasedItem?.quantity - 1) {
+					toastStore.show('User can not return extra quantity', 'error');
+					return;
+				}
+			}
+
+			// Cart Modification
 			if (existingItem) {
 				existingItem.quantity += 1;
 			} else {
 				tempCart.push({
 					barcode: scannedItem.barcode,
-					name: scannedItem.name,
+					name: purchaseCartFocused ? scannedItem.name : purchasedItem.name,
 					quantity: 1,
-					unitPrice: scannedItem.salesPrice,
-					discountPercentage: scannedItem.discount || 0,
+					unitPrice: purchaseCartFocused ? scannedItem.salesPrice : purchasedItem.unitPrice,
+					discountPercentage: purchaseCartFocused
+						? scannedItem.discount || 0
+						: purchasedItem.discountPercentage || 0,
 					discountedUnitPrice: 0,
 					grossAmount: 0,
 					netAmount: 0
@@ -83,6 +104,7 @@
 			barcode = '';
 			handleReturnBill();
 		} else if (/^\d+[+=]\d+$/.test(value)) {
+			barcode = '';
 			// Shortcut for quantity update, e.g., "2+3" means add 3 to item at serial 2
 			const [serial, qty] = value.split(/[+=]/).map(Number);
 			const cartKey = purchaseCartFocused ? 'purchaseCart' : 'returnCart';
@@ -93,10 +115,20 @@
 				toastStore.show(`No item at serial ${serial} to update`, 'error');
 				return;
 			}
-			const scannedItem = stocks.find((s) => s.barcode === tempCart[serial - 1].barcode);
-			if (scannedItem && scannedItem.count - qty < 0) {
-				toastStore.show(`Only ${scannedItem.count} left for ${scannedItem.name}`, 'error');
-				return;
+			if (purchaseCartFocused) {
+				const scannedItem = stocks.find((s) => s.barcode === tempCart[serial - 1].barcode);
+				if (scannedItem && scannedItem.count - qty < 0) {
+					toastStore.show(`Only ${scannedItem.count} left for ${scannedItem.name}`, 'error');
+					return;
+				}
+			} else {
+				const purchasedItem = referenceBillData.purchaseCart.lineItems.find(
+					(i) => i.barcode === tempCart[serial - 1].barcode
+				);
+				if (qty > purchasedItem?.quantity) {
+					toastStore.show('User can not return extra quantity', 'error');
+					return;
+				}
 			}
 
 			tempCart[serial - 1].quantity = qty;
@@ -149,7 +181,9 @@
 	});
 
 	function handleSwitchCart() {
-		purchaseCartFocused = !purchaseCartFocused;
+		if (isReturnBill) {
+			purchaseCartFocused = !purchaseCartFocused;
+		}
 	}
 
 	function handleCustomerNameSelection(value) {
@@ -181,14 +215,14 @@
 	}
 
 	function handleReturnBill() {
-		if (isEligibaleToReturn) {
-			console.log('handle Return bill called and todo');
-			let editableItem = getInitialItem();
+		if (isEligibleToReturn) {
+			referenceBillData = item;
+			item = getInitialItem();
+			item.metadata.referenceBill = referenceBillData.metadata.billNo;
+			barcodeElement?.focus();
+			purchaseCartFocused = false;
 		} else {
-			toastStore.show(
-				`Older than ${env.PUBLIC_BILL_RETURN_ELIGABLE} days, can't returnable`,
-				'error'
-			);
+			toastStore.show(`Can't returnable, may be expired or alredy returned`, 'error');
 		}
 	}
 </script>
@@ -207,7 +241,7 @@
 		<input type="hidden" name="_id" value={item._id} />
 	{/if}
 	<input type="hidden" name="data" value={JSON.stringify(item)} />
-	{#if item.metadata?.referenceBill}
+	{#if isReturnBill}
 		<div class="mb-5 flex items-center justify-between rounded bg-black/20 px-4 py-2">
 			<span>
 				<span>Exchange Bill Against: </span>
@@ -215,28 +249,66 @@
 					{item.metadata.referenceBill}
 				</span>
 			</span>
-			<button
-				class="-mt-1 cursor-pointer text-2xl text-red-600"
-				onclick={() => (item.metadata.referenceBill = '')}
-				type="button"
-			>
-				&times;
-			</button>
 		</div>
 	{/if}
 
 	<Input
-		placeholder="Barcode"
+		placeholder={`Barcode - ${purchaseCartFocused ? 'Purchase Cart' : 'Return Cart'}`}
 		autofocus
+		color={purchaseCartFocused ? 'blue' : 'green'}
 		hotKeys={{ ENTER: handleBarcode, ' ': handleSwitchCart }}
 		bind:value={barcode}
+		bind:element={barcodeElement}
 	/>
+
+	{#if item.returnCart?.lineItems && item.returnCart.lineItems.length}
+		<table class="mb-5 w-full">
+			<caption class="border border-b-0 bg-green-100">Return Cart</caption>
+			<thead>
+				<tr class="bg-green-100 *:border *:px-1">
+					<th>SN</th>
+					<th>Barcode</th>
+					<th>Name</th>
+					<th>Qty</th>
+					<th>Price</th>
+					<th>Dis %</th>
+					<th>Dis Price</th>
+					<th>Gross</th>
+					<th>Net</th>
+				</tr>
+			</thead>
+			<tbody>
+				{#each item.returnCart.lineItems as lineItem, index (lineItem.barcode)}
+					<tr class="text-center *:border *:px-1">
+						<td>{index + 1}</td>
+						<td>{lineItem.barcode}</td>
+						<td>{lineItem.name}</td>
+						<td>{lineItem.quantity}</td>
+						<td>{lineItem.unitPrice}</td>
+						<td>{lineItem.discountPercentage}</td>
+						<td>{lineItem.discountedUnitPrice}</td>
+						<td>{lineItem.grossAmount}</td>
+						<td>{lineItem.netAmount}</td>
+					</tr>
+				{/each}
+				<tr class="bg-green-100 text-center *:border *:px-1">
+					<td colspan="7" class="text-right">
+						Total Amount <span class="font-bold! text-red-600">
+							(-{formatter.numberWithCommas(item.returnCart.totalDiscount)})
+						</span>
+					</td>
+					<td>{formatter.numberWithCommas(item.returnCart.subTotal)}</td>
+					<td>{formatter.numberWithCommas(item.returnCart.finalAmount)}</td>
+				</tr>
+			</tbody>
+		</table>
+	{/if}
 
 	{#if item.purchaseCart?.lineItems && item.purchaseCart.lineItems.length}
 		<table class="mb-5 w-full">
-			<caption class="border border-b-0 bg-black/10">Purchase Cart</caption>
+			<caption class="border border-b-0 bg-blue-100">Purchase Cart</caption>
 			<thead>
-				<tr class="bg-black/10 *:border *:px-1">
+				<tr class="bg-blue-100 *:border *:px-1">
 					<th>SN</th>
 					<th>Barcode</th>
 					<th>Name</th>
@@ -262,7 +334,7 @@
 						<td>{lineItem.netAmount}</td>
 					</tr>
 				{/each}
-				<tr class="bg-black/10 text-center *:border *:px-1">
+				<tr class="bg-blue-100 text-center *:border *:px-1">
 					<td colspan="7" class="text-right">
 						Total Amount <span class="font-bold! text-red-600">
 							(-{formatter.numberWithCommas(item.purchaseCart.totalDiscount)})
@@ -343,9 +415,17 @@
 					</span>
 				</div>
 				<div>
-					<span class="text-sm text-black/60">Final Cart Amount = ₹ </span>
+					<span class="text-sm text-black/60">Final Purchase Cart Amount = ₹ </span>
 					<span>{formatter.numberWithCommas(item.purchaseCart.finalAmount)}</span>
 				</div>
+				{#if item.returnCart.finalAmount}
+					<div>
+						<span class="text-sm text-black/60">Final Return Cart Amount = ₹ </span>
+						<span class="text-red-600">
+							- {formatter.numberWithCommas(item.returnCart.finalAmount)}
+						</span>
+					</div>
+				{/if}
 				<hr class="ml-auto w-60" />
 			{/if}
 
@@ -392,9 +472,9 @@
 
 	{#if item.ledger.netPayable}
 		<table class="mb-4 w-full">
-			<caption class="border border-b-0 bg-black/10">Payment Details</caption>
+			<caption class="border border-b-0 bg-amber-100">Payment Details</caption>
 			<thead>
-				<tr class="bg-black/10 *:border *:px-1">
+				<tr class="bg-amber-100 *:border *:px-1">
 					<th>SN</th>
 					<th>Flow Direction</th>
 					<th>Payment Mode</th>
@@ -509,7 +589,7 @@
 	</div>
 
 	{#snippet extraButtons()}
-		{#if item?._id && isEligibaleToReturn}
+		{#if isEligibleToReturn}
 			<Button onclick={handleReturnBill}>Create Return Bill</Button>
 		{/if}
 	{/snippet}
