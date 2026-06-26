@@ -25,6 +25,15 @@ export async function load({ depends }) {
 }
 
 export const actions = {
+	findBill: async function ({ request }) {
+		const db = await getDb();
+		const billCollection = db.collection('bill');
+		const formData = await request.formData();
+		const billNo = formData.get('barcode');
+
+		const bill = await billCollection.findOne({ "metadata.billNo": billNo });
+		return JSON.parse(JSON.stringify(bill));
+	},
 	save: async function ({ request }) {
 		const db = await getDb();
 		const billCollection = db.collection('bill');
@@ -67,7 +76,7 @@ export const actions = {
 			const { _id: _, ...dataWithoutId } = data;
 			await billCollection.updateOne(
 				{ _id },
-				{ $set: { ...dataWithoutId, updatedAt: new Date() } }
+				{ $set: { ...dataWithoutId, createdAt: new Date(data.createdAt), updatedAt: new Date() } }
 			);
 		} else {
 			const result = await billCollection.insertOne({ ...data, createdAt: new Date() });

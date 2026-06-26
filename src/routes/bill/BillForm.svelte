@@ -6,15 +6,39 @@
 	import formatter from '$lib/utils/formatter';
 	import { toastStore } from '$lib/utils/toast.svelte';
 	import { hash } from '$lib/utils/useHash.js';
-	import { initialPaymentItemState } from './state';
+	import { initialBillState, initialPaymentItemState } from './state';
 	import { reCalculateItem } from './calculation';
+	import Button from '$lib/component/Button.svelte';
+	import { env } from '$env/dynamic/public';
 
-	let { item = $bindable(), handleFormClose, stocks = [], outstandings = [] } = $props();
+	let {
+		item = $bindable(),
+		handleFormClose,
+		handleBillBarCode,
+		stocks = [],
+		outstandings = []
+	} = $props();
 	let purchaseCartFocused = $state(true);
 	let barcode = $state('');
 	let isCreditExist = $derived(item.ledger.payments.find((p) => p.paymentMode === 'Credit'));
 	let advanceAmountExist = $state(0);
 	let balanceAmountExist = $state(0);
+
+	let isTodayBill = $derived(
+		item?._id
+			? new Date(item.createdAt).toLocaleDateString() === new Date().toLocaleDateString()
+			: true
+	);
+	let isEligibaleToReturn = $derived(
+		item?._id
+			? (() => {
+					const creationDate = new Date(item.createdAt);
+					const expiryDate = new Date(creationDate);
+					expiryDate.setDate(creationDate.getDate() + Number(env.PUBLIC_BILL_RETURN_ELIGABLE));
+					return expiryDate >= new Date();
+				})()
+			: false
+	);
 
 	function handleBarcode({ value }) {
 		if (value.startsWith('PR')) {
@@ -53,7 +77,11 @@
 			barcode = '';
 			item = reCalculateItem(item);
 		} else if (value.startsWith('BL')) {
-			// Handle BL barcodes here
+			handleBillBarCode(value);
+			barcode = '';
+		} else if (value.startsWith('RETURN')) {
+			barcode = '';
+			handleReturnBill();
 		} else if (/^\d+[+=]\d+$/.test(value)) {
 			// Shortcut for quantity update, e.g., "2+3" means add 3 to item at serial 2
 			const [serial, qty] = value.split(/[+=]/).map(Number);
@@ -116,6 +144,7 @@
 		untrack(() => {
 			item = reCalculateItem(item);
 			handleCustomerNameSelection(item.metadata.customer.name);
+			barcode = '';
 		});
 	});
 
@@ -146,6 +175,22 @@
 			item.ledger.payments.splice(index, 1);
 		}
 	}
+
+	function getInitialItem() {
+		return structuredClone(initialBillState);
+	}
+
+	function handleReturnBill() {
+		if (isEligibaleToReturn) {
+			console.log('handle Return bill called and todo');
+			let editableItem = getInitialItem();
+		} else {
+			toastStore.show(
+				`Older than ${env.PUBLIC_BILL_RETURN_ELIGABLE} days, can't returnable`,
+				'error'
+			);
+		}
+	}
 </script>
 
 <Form
@@ -153,7 +198,8 @@
 	title={`POS Billing Engine - ${item._id ? 'Update' : 'Create'} Bill ${item._id && item.metadata.billNo ? ` - ${item.metadata.billNo}` : ''}`}
 	large={true}
 	isEdit={item._id}
-	disableSubmitButton={item.ledger.pendingAmount !== 0 ||
+	disableSubmitButton={!isTodayBill ||
+		item.ledger.pendingAmount !== 0 ||
 		(isCreditExist && !item.metadata.customer.name) ||
 		(item.metadata.customer.name && !/^\d{10}$/.test(item.metadata.customer.phone))}
 >
@@ -237,22 +283,32 @@
 				bind:value={item.metadata.customer.name}
 				caseMode="capitalize"
 				onBlur={handleCustomerNameSelection}
+				disabled={!isTodayBill}
 			/>
 			{#if item.metadata.customer.name}
 				<Input
 					placeholder="Customer Phone"
 					bind:value={item.metadata.customer.phone}
 					caseMode="capitalize"
+					disabled={!isTodayBill}
 				/>
 				<div class="mb-4 flex gap-4">
 					<div>
-						<Input placeholder="Advance Amount" bind:value={item.ledger.advanceAmount} />
+						<Input
+							placeholder="Advance Amount"
+							bind:value={item.ledger.advanceAmount}
+							disabled={!isTodayBill}
+						/>
 						<span class="-mt-3 block text-green-700">
 							Advance: {formatter.numberWithCommas(advanceAmountExist)}
 						</span>
 					</div>
 					<div>
-						<Input placeholder="Balance Amount" bind:value={item.ledger.balanceAmount} />
+						<Input
+							placeholder="Balance Amount"
+							bind:value={item.ledger.balanceAmount}
+							disabled={!isTodayBill}
+						/>
 						<span class="-mt-3 block text-red-700">
 							Balance: {formatter.numberWithCommas(balanceAmountExist)}
 						</span>
@@ -260,12 +316,20 @@
 				</div>
 			{/if}
 			{#if item.ledger.netPayable && !item.metadata.customer.name}
-				<Input placeholder="Extra Discount" bind:value={item.ledger.extraDiscount} />
+				<Input
+					placeholder="Extra Discount"
+					bind:value={item.ledger.extraDiscount}
+					disabled={!isTodayBill}
+				/>
 			{/if}
 		</div>
 		<div class="text-right *:*:nth-[2]:font-bold!">
 			{#if item.ledger.netPayable && item.metadata.customer.name}
-				<Input placeholder="Extra Discount" bind:value={item.ledger.extraDiscount} />
+				<Input
+					placeholder="Extra Discount"
+					bind:value={item.ledger.extraDiscount}
+					disabled={!isTodayBill}
+				/>
 			{/if}
 			{#if item.purchaseCart.subTotal}
 				<div>
@@ -350,6 +414,7 @@
 										e.stopPropagation();
 									}
 								}}
+								disabled={!isTodayBill}
 								class="w-full cursor-pointer rounded-xs outline-blue-700 focus:bg-blue-50 focus:text-blue-700 focus:outline-2"
 							>
 								<option value={1}>In Flow</option>
@@ -358,6 +423,7 @@
 						</td>
 						<td>
 							<select
+								disabled={!isTodayBill}
 								bind:value={payment.paymentMode}
 								onkeydown={(e) => {
 									if (e.key === 'Enter') {
@@ -374,6 +440,7 @@
 						</td>
 						<td>
 							<input
+								disabled={!isTodayBill}
 								bind:value={payment.amount}
 								class="w-full cursor-pointer rounded-xs px-1 outline-blue-700 focus:bg-blue-50 focus:text-blue-700 focus:outline-2"
 								type="text"
@@ -440,4 +507,10 @@
 			{/if}
 		</div>
 	</div>
+
+	{#snippet extraButtons()}
+		{#if item?._id && isEligibaleToReturn}
+			<Button onclick={handleReturnBill}>Create Return Bill</Button>
+		{/if}
+	{/snippet}
 </Form>

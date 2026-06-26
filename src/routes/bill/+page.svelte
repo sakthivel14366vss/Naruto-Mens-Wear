@@ -60,6 +60,15 @@
 			handleFormClose();
 		}
 	}
+
+	async function handleBillBarCode(barcode) {
+		const result = await triggerAction('?/findBill', { barcode });
+		if (result.type == 'success' && result.data) {
+			editableItem = result.data;
+		} else {
+			toastStore.show('Faild to load Bill', 'error');
+		}
+	}
 </script>
 
 <svelte:window onkeydown={handleKeyDown} />
@@ -77,6 +86,7 @@
 <BillForm
 	bind:item={editableItem}
 	{handleFormClose}
+	{handleBillBarCode}
 	stocks={data.stocks}
 	outstandings={data.outstandings}
 />

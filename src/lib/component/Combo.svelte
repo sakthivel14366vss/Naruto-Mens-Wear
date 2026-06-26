@@ -15,7 +15,8 @@
 		createOption = dummyFunction,
 		onValueChange = dummyFunction,
 		onValueSelected = dummyFunction,
-		onBlur = dummyFunction
+		onBlur = dummyFunction,
+		...props
 	} = $props();
 
 	// -------------------------------------
@@ -135,6 +136,7 @@
 		onkeydown={handleOptionNavigation}
 		onfocus={handleFocus}
 		onblur={handleOnBlur}
+		{...props}
 	/>
 
 	{#if options.length && showOptions && filtered.length}

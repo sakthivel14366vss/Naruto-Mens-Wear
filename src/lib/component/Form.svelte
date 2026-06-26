@@ -5,6 +5,7 @@
 
 	let {
 		children = () => {},
+		extraButtons = () => {},
 		large = false,
 		title,
 		isEdit = false,
@@ -32,6 +33,7 @@
 					{isEdit ? 'Update' : 'Create'}
 				</Button>
 				<Button color="gray" onclick={close}>Cancel</Button>
+				{@render extraButtons()}
 			</div>
 		</form>
 	</div>
