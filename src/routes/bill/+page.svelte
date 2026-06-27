@@ -21,8 +21,8 @@
 			billNo: b.metadata.billNo,
 			customerName: b.metadata.customer.name,
 			netPayable: formatter.numberWithCommas(b.ledger.netPayable),
-			exchangeBill: b?.returnCart?.lineItems?.length ? 'Yes' : 'No',
-			exchangeClaimed: b.isReturnClaimed ? 'Yes' : 'No'
+			exchangeBill: b?.returnCart?.lineItems?.length ? '🟢 Yes' : '🔴 No',
+			exchangeClaimed: b.metadata.referByBill ? '🟢 Yes' : '🔴 No'
 		}))
 	);
 

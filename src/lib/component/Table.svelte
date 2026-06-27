@@ -14,15 +14,9 @@
 		onDelete = emptyFunction,
 		hiddenKeys = []
 	} = $props();
-	const HIDDEN_KEYS = new Set([
-		'_id',
-		'id',
-		'createdAt',
-		'savedAt',
-		'updatedAt',
-		'__v',
-		...hiddenKeys
-	]);
+	const HIDDEN_KEYS = $derived(
+		new Set(['_id', 'id', 'createdAt', 'savedAt', 'updatedAt', '__v', ...hiddenKeys])
+	);
 	let overRowIndex = $state(0);
 
 	const helperOption = [

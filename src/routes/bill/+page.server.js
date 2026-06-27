@@ -89,7 +89,7 @@ export const actions = {
 		await processBillInventoryAndLedgers(db, oldBill, newBill);
 
 		// 6. Update Referer bill
-		if (item.metadata?.referenceBill) {
+		if (data.metadata?.referenceBill) {
 			await updateReferByBill({
 				currentBilNo: data.metadata.billNo,
 				refererBillNo: data.metadata.referenceBill
@@ -166,6 +166,8 @@ async function processBillInventoryAndLedgers(db, oldBill, newBill) {
 }
 
 async function updateReferByBill({ currentBilNo, refererBillNo }) {
+	const db = await getDb();
+	const billCollection = db.collection('bill');
 	await billCollection.updateOne(
 		// 1. Find the original bill by its actual bill number field
 		{ 'metadata.billNo': refererBillNo },

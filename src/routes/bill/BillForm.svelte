@@ -32,6 +32,7 @@
 			: true
 	);
 	let isReturnBill = $derived(item.metadata?.referenceBill);
+	let isReturnClaimed = $derived(item.metadata?.referByBill);
 	let isEligibleToReturn = $derived(
 		item?._id
 			? (() => {
@@ -39,7 +40,9 @@
 					const expiryDate = new Date(creationDate);
 					expiryDate.setDate(creationDate.getDate() + Number(env.PUBLIC_BILL_RETURN_ELIGABLE));
 					return expiryDate >= new Date();
-				})() && !item.metadata.referenceBill
+				})() &&
+					!item.metadata.referenceBill &&
+					!isReturnClaimed
 			: false
 	);
 
@@ -214,6 +217,14 @@
 		return structuredClone(initialBillState);
 	}
 
+	function navigateReferenceBill() {
+		let billNo = item.metadata?.referenceBill ? item.metadata.referenceBill : '';
+		billNo = item.metadata?.referByBill ? item.metadata.referByBill : billNo;
+		if (billNo) {
+			handleBillBarCode(billNo);
+		}
+	}
+
 	function handleReturnBill() {
 		if (isEligibleToReturn) {
 			referenceBillData = item;
@@ -242,14 +253,34 @@
 	{/if}
 	<input type="hidden" name="data" value={JSON.stringify(item)} />
 	{#if isReturnBill}
-		<div class="mb-5 flex items-center justify-between rounded bg-black/20 px-4 py-2">
-			<span>
+		<button
+			tabindex="-1"
+			class="mb-4 w-full cursor-pointer"
+			onclick={navigateReferenceBill}
+			type="button"
+		>
+			<div class="rounded bg-blue-100 px-4 py-2">
 				<span>Exchange Bill Against: </span>
-				<span class="font-bold! text-green-700">
+				<span class="font-bold! text-blue-700">
 					{item.metadata.referenceBill}
 				</span>
-			</span>
-		</div>
+			</div>
+		</button>
+	{/if}
+	{#if isReturnClaimed}
+		<button
+			tabindex="-1"
+			class="mb-4 w-full cursor-pointer"
+			onclick={navigateReferenceBill}
+			type="button"
+		>
+			<div class="rounded bg-red-100 px-4 py-2">
+				<span>Exchange Bill Claimed on: </span>
+				<span class="font-bold! text-red-700">
+					{item.metadata.referByBill}
+				</span>
+			</div>
+		</button>
 	{/if}
 
 	<Input
