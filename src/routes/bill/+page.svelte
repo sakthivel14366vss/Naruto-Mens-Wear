@@ -2,16 +2,36 @@
 	import Table from '$lib/component/Table.svelte';
 	import { toastStore } from '$lib/utils/toast.svelte.js';
 	import { hash } from '$lib/utils/useHash.js';
-	import { invalidate } from '$app/navigation';
+	import { goto, invalidate } from '$app/navigation';
 	import { useFormHandler } from '$lib/utils/formHandler.svelte.js';
 	import triggerAction from '$lib/utils/triggerAction.js';
 	import BillForm from './BillForm.svelte';
+	import { page } from '$app/state';
 	import { initialBillState } from './state.js';
 	import { getFormattedDate, getFormattedTime } from '$lib/utils/dateTime';
 	import formatter from '$lib/utils/formatter';
+	import {
+		getDayBounds,
+		getWeekBounds,
+		getMonthBounds,
+		calculateNewReferenceDate
+	} from '$lib/utils/dateFilter';
+
+	const sideInputStyle =
+		'rounded border-2 cursor-pointer border-gray-400 px-3 py-1 text-gray-500 outline-none focus:border-blue-600 focus:text-blue-600 hover:border-blue-600 hover:text-blue-600';
 
 	const { form = null, data } = $props();
 
+	let duration = $derived(page.url.searchParams.get('duration') || 'Daily');
+	let refDateStr = $derived(
+		page.url.searchParams.get('refDate') || new Date().toISOString().split('T')[0]
+	);
+	let filterPeriod = $derived.by(() => {
+		const referenceDate = new Date(refDateStr);
+		if (duration === 'weekly') return getWeekBounds(referenceDate);
+		if (duration === 'monthly') return getMonthBounds(referenceDate);
+		return getDayBounds(referenceDate);
+	});
 	const formattedBill = $derived(
 		data.bills.map((b) => ({
 			_id: b._id,
@@ -70,19 +90,81 @@
 			toastStore.show('Faild to load Bill', 'error');
 		}
 	}
+
+	// Central function to commit URL adjustments
+	function updateUrlParams(newParams) {
+		const newUrl = new URL(page.url);
+
+		Object.entries(newParams).forEach(([key, value]) => {
+			if (value === null) newUrl.searchParams.delete(key);
+			else newUrl.searchParams.set(key, value);
+		});
+
+		// Push calculated dates into the URL so your backend (+page.server.js) sees them immediately
+		newUrl.searchParams.set('fromDate', filterPeriod.fromDate.getTime());
+		newUrl.searchParams.set('toDate', filterPeriod.toDate.getTime());
+
+		// SvelteKit native router update (keeps scrolling intact, avoids full page reload)
+		goto(newUrl.toString(), { replaceState: true, keepFocus: true });
+	}
+
+	// Interactivity triggers
+	function handleDurationChange(e) {
+		updateUrlParams({
+			duration: e.target.value,
+			refDate: new Date().toISOString().split('T')[0] // Reset to today when view changes
+		});
+	}
+
+	function stepCycle(direction) {
+		const nextRefStr = calculateNewReferenceDate(refDateStr, duration, direction);
+		updateUrlParams({ refDate: nextRefStr });
+	}
+
+	function resetToToday() {
+		updateUrlParams({ refDate: new Date().toISOString().split('T')[0] });
+	}
 </script>
 
 <svelte:window onkeydown={handleKeyDown} />
 
-<Table items={formattedBill} {onCreate} {onEdit} title="Bills" hiddenKeys={['_id']}>
-	{#snippet titleStart()}
-		23-06-2025
-	{/snippet}
-	{#snippet titleEnd()}
-		<button class="mr-2 cursor-pointer rounded-full hover:bg-white hover:text-red-800">🢀</button>
-		<button class="mr-2 cursor-pointer rounded-full hover:bg-white hover:text-red-800">🢂</button>
-	{/snippet}
-</Table>
+<div class="flex items-start gap-2">
+	<div class="w-fit">
+		<Table items={formattedBill} {onCreate} {onEdit} title="Bills" hiddenKeys={['_id']} />
+	</div>
+
+	<div class="w-60 p-5">
+		<div class="mb-3 w-full">
+			<select
+				class="w-full appearance-none text-center {sideInputStyle}"
+				value={duration}
+				onchange={handleDurationChange}
+			>
+				<option>Daily</option>
+				<option>Weekly</option>
+				<option>Monthly</option>
+			</select>
+		</div>
+
+		<div class="mb-3 flex w-full items-center gap-3">
+			<button class="rotate-180 {sideInputStyle}" onclick={() => stepCycle('prev')}> ➤ </button>
+			<button class="flex-1 {sideInputStyle}" onclick={resetToToday}> Current </button>
+			<button class={sideInputStyle} onclick={() => stepCycle('next')}> ➤ </button>
+		</div>
+
+		{#if filterPeriod.duration == 'Daily'}
+			<div class="mb-3 flex flex-col gap-2">
+				<div class="{sideInputStyle} text-center">{getFormattedDate(filterPeriod.fromDate)}</div>
+			</div>
+		{:else}
+			<div class="mb-3 flex flex-col gap-2">
+				<div class="{sideInputStyle} text-center">{getFormattedDate(filterPeriod.fromDate)}</div>
+				<div class="-my-2 text-center">to</div>
+				<div class="{sideInputStyle} text-center">{getFormattedDate(filterPeriod.toDate)}</div>
+			</div>
+		{/if}
+	</div>
+</div>
 
 {#if $hash.segments.at(-1) === 'form'}
 	<BillForm

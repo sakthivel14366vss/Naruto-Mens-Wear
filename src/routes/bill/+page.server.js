@@ -10,7 +10,10 @@ function generateBillNo(countOfDay) {
 	return `BL${formatDateTime('YYMMDD')}${(countOfDay + 1).toString().padStart(2, '0')}`;
 }
 
-export async function load({ depends }) {
+export async function load({ depends, url }) {
+	let list = url.searchParams.get('list');
+	let duration = url.searchParams.get('duration');
+
 	depends('bill');
 	const db = await getDb();
 	const stockCollection = db.collection('stock');
