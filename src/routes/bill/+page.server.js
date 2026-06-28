@@ -1,4 +1,5 @@
 // src/routes/bill/+page.server.js
+import { getDateFilter } from '$lib/utils/dateFilter.js';
 import { formatDateTime } from '$lib/utils/dateTime.js';
 import formatter from '$lib/utils/formatter.js';
 import { getDb } from '$lib/utils/mongodb';
@@ -11,17 +12,17 @@ function generateBillNo(countOfDay) {
 }
 
 export async function load({ depends, url }) {
-	let list = url.searchParams.get('list');
-	let duration = url.searchParams.get('duration');
-
 	depends('bill');
+	let fromDate = url.searchParams.get('fromDate');
+	let toDate = url.searchParams.get('toDate');
+
 	const db = await getDb();
 	const stockCollection = db.collection('stock');
 	const billCollection = db.collection('bill');
 	const outStandingCollection = db.collection('outstanding');
 
 	const stocks = await stockCollection.find({}).toArray();
-	const bills = await billCollection.find({}).toArray();
+	const bills = await billCollection.find({ ...getDateFilter(fromDate, toDate) }).toArray();
 	const outstandings = await outStandingCollection.find({}).toArray();
 
 	return JSON.parse(JSON.stringify({ stocks, bills, outstandings }));

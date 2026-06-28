@@ -14,7 +14,7 @@
 		getDayBounds,
 		getWeekBounds,
 		getMonthBounds,
-		calculateNewReferenceDate
+		calculateNewReferenceBounds
 	} from '$lib/utils/dateFilter';
 
 	const sideInputStyle =
@@ -22,16 +22,18 @@
 
 	const { form = null, data } = $props();
 
+	// Single source of truth pulled directly from the URL params
 	let duration = $derived(page.url.searchParams.get('duration') || 'Daily');
-	let refDateStr = $derived(
-		page.url.searchParams.get('refDate') || new Date().toISOString().split('T')[0]
-	);
+	let fromParam = $derived(page.url.searchParams.get('fromDate'));
+	let toParam = $derived(page.url.searchParams.get('toDate'));
+
 	let filterPeriod = $derived.by(() => {
-		const referenceDate = new Date(refDateStr);
-		if (duration === 'weekly') return getWeekBounds(referenceDate);
-		if (duration === 'monthly') return getMonthBounds(referenceDate);
+		const referenceDate = fromParam ? new Date(Number(fromParam)) : new Date();
+		if (duration === 'Weekly') return getWeekBounds(referenceDate);
+		if (duration === 'Monthly') return getMonthBounds(referenceDate);
 		return getDayBounds(referenceDate);
 	});
+
 	const formattedBill = $derived(
 		data.bills.map((b) => ({
 			_id: b._id,
@@ -87,42 +89,64 @@
 		if (result.type == 'success' && result.data) {
 			editableItem = result.data;
 		} else {
-			toastStore.show('Faild to load Bill', 'error');
+			toastStore.show('Failed to load Bill', 'error');
 		}
 	}
 
-	// Central function to commit URL adjustments
-	function updateUrlParams(newParams) {
+	// 3. Centralized URL Committer
+	function updateUrlParams(newParams = {}) {
 		const newUrl = new URL(page.url);
 
 		Object.entries(newParams).forEach(([key, value]) => {
-			if (value === null) newUrl.searchParams.delete(key);
-			else newUrl.searchParams.set(key, value);
+			if (value === null || value === undefined) {
+				newUrl.searchParams.delete(key);
+			} else {
+				newUrl.searchParams.set(key, String(value));
+			}
 		});
 
-		// Push calculated dates into the URL so your backend (+page.server.js) sees them immediately
-		newUrl.searchParams.set('fromDate', filterPeriod.fromDate.getTime());
-		newUrl.searchParams.set('toDate', filterPeriod.toDate.getTime());
-
-		// SvelteKit native router update (keeps scrolling intact, avoids full page reload)
 		goto(newUrl.toString(), { replaceState: true, keepFocus: true });
 	}
 
-	// Interactivity triggers
+	// 4. Interactivity changes calculate boundaries and commit them explicitly
 	function handleDurationChange(e) {
+		const newDuration = e.target.value;
+		// Recalculate bounds for today using the new duration format
+		let bounds = getDayBounds(new Date());
+		if (newDuration === 'Weekly') bounds = getWeekBounds(new Date());
+		if (newDuration === 'Monthly') bounds = getMonthBounds(new Date());
+
 		updateUrlParams({
-			duration: e.target.value,
-			refDate: new Date().toISOString().split('T')[0] // Reset to today when view changes
+			duration: newDuration,
+			fromDate: bounds.fromDate.getTime(),
+			toDate: bounds.toDate.getTime()
 		});
 	}
 
-	function stepCycle(direction) {
-		const nextRefStr = calculateNewReferenceDate(refDateStr, duration, direction);
-		updateUrlParams({ refDate: nextRefStr });
+	function stepCycle(directionStr) {
+		// Convert 'next'/'prev' strings directly into numbers for calculateNewReferenceBounds
+		const direction = directionStr === 'next' ? 1 : -1;
+
+		// Calculate new boundary dates relative to the current timeframe
+		const targetBounds = calculateNewReferenceBounds(filterPeriod.fromDate, duration, direction);
+
+		updateUrlParams({
+			duration: duration,
+			fromDate: targetBounds.fromDate.getTime(),
+			toDate: targetBounds.toDate.getTime()
+		});
 	}
 
 	function resetToToday() {
-		updateUrlParams({ refDate: new Date().toISOString().split('T')[0] });
+		let bounds = getDayBounds(new Date());
+		if (duration === 'Weekly') bounds = getWeekBounds(new Date());
+		if (duration === 'Monthly') bounds = getMonthBounds(new Date());
+
+		updateUrlParams({
+			duration: duration,
+			fromDate: bounds.fromDate.getTime(),
+			toDate: bounds.toDate.getTime()
+		});
 	}
 </script>
 
@@ -152,7 +176,7 @@
 			<button class={sideInputStyle} onclick={() => stepCycle('next')}> ➤ </button>
 		</div>
 
-		{#if filterPeriod.duration == 'Daily'}
+		{#if duration === 'Daily'}
 			<div class="mb-3 flex flex-col gap-2">
 				<div class="{sideInputStyle} text-center">{getFormattedDate(filterPeriod.fromDate)}</div>
 			</div>
