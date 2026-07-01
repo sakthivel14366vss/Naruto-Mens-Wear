@@ -38,7 +38,7 @@
 			? (() => {
 					const creationDate = new Date(item.createdAt);
 					const expiryDate = new Date(creationDate);
-					expiryDate.setDate(creationDate.getDate() + Number(env.PUBLIC_BILL_RETURN_ELIGABLE));
+					expiryDate.setDate(creationDate.getDate() + Number(env.PUBLIC_BILL_RETURN_ELIGABLE || 3));
 					return expiryDate >= new Date();
 				})() &&
 					!item.metadata.referenceBill &&
@@ -65,6 +65,9 @@
 					return;
 				} else if (!scannedItem.count) {
 					toastStore.show('Product Out of Stock', 'error');
+					return;
+				} else if (scannedItem.count < existingItem?.quantity + 1) {
+					toastStore.show(`Only ${scannedItem.count} left for ${scannedItem.name}`, 'error');
 					return;
 				}
 			} else {

@@ -4,7 +4,7 @@ import { formatDateTime } from '$lib/utils/dateTime.js';
 import formatter from '$lib/utils/formatter.js';
 import { getDb } from '$lib/utils/mongodb';
 import parser from '$lib/utils/parser.js';
-import { responseInvalid } from '$lib/utils/response.js';
+import { responseInvalid, responseSuccess } from '$lib/utils/response.js';
 import { reCalculateItem, getStockDeltaSummary, getBillCreditContribution } from './calculation.js';
 
 function generateBillNo(countOfDay) {
@@ -100,7 +100,7 @@ export const actions = {
 			});
 		}
 
-		return { success: true };
+		return responseSuccess('Bill Saved');
 	}
 };
 
