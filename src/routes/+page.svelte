@@ -5,7 +5,8 @@
 		{ emoji: '📜', name: 'Bill' },
 		{ emoji: '💵', name: 'Payment' },
 		{ emoji: '📦', name: 'Stock' },
-		{ emoji: '💰', name: 'Outstanding' }
+		{ emoji: '💰', name: 'Outstanding' },
+		{ emoji: '🧰', name: 'Configuration' }
 	];
 
 	function handleKeyDown(event) {
@@ -24,6 +25,9 @@
 			case 'O':
 				navigations.Outstanding();
 				break;
+			case 'C':
+				navigations.Configuration();
+				break;
 		}
 	}
 
@@ -31,7 +35,8 @@
 		Stock: () => goto('/stock'),
 		Bill: () => goto('/bill'),
 		Payment: () => goto('/payment'),
-		Outstanding: () => goto('/outstanding')
+		Outstanding: () => goto('/outstanding'),
+		Configuration: () => goto('/config')
 	};
 </script>
 

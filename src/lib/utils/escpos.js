@@ -313,8 +313,14 @@ export class ESCPOSPrinter {
 		return this;
 	}
 
-	feed(lines = 3) {
-		this.buffer += this.LF.repeat(lines);
+	feed(lines = 5) {
+		// 1. Force the printer to print any queued text lines first
+		this.buffer += '\x0A';
+
+		// 2. Feed the remaining blank lines safely using spaces
+		for (let i = 0; i < lines; i++) {
+			this.buffer += ' \x0A';
+		}
 		return this;
 	}
 
@@ -326,5 +332,18 @@ export class ESCPOSPrinter {
 
 	getBuffer() {
 		return this.buffer;
+	}
+
+	/**
+	 * Converts the internal string buffer into a raw binary Uint8Array
+	 * ensuring control bytes (0x00-0xFF) aren't broken by UTF-8 encoding.
+	 * @returns {Uint8Array}
+	 */
+	getRawBytes() {
+		const buf = new Uint8Array(this.buffer.length);
+		for (let i = 0; i < this.buffer.length; i++) {
+			buf[i] = this.buffer.charCodeAt(i) & 0xff;
+		}
+		return buf;
 	}
 }

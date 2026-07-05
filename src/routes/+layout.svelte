@@ -24,6 +24,9 @@
 				case 'O':
 					navigations.Outstanding();
 					break;
+				case 'C':
+					navigations.Configuration();
+					break;
 			}
 		}
 	}
@@ -33,7 +36,8 @@
 		Stock: () => goto('/stock'),
 		Bill: () => goto('/bill'),
 		Payment: () => goto('/payment'),
-		Outstanding: () => goto('/outstanding')
+		Outstanding: () => goto('/outstanding'),
+		Configuration: () => goto('/config')
 	};
 </script>
 
