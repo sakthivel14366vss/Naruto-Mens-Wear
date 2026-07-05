@@ -10,6 +10,7 @@
 	import { reCalculateItem } from './calculation';
 	import Button from '$lib/component/Button.svelte';
 	import { env } from '$env/dynamic/public';
+	import { printBillBeforePayment } from './printFormat';
 
 	let {
 		item = $bindable(),
@@ -109,6 +110,9 @@
 		} else if (value.startsWith('RETURN')) {
 			barcode = '';
 			handleReturnBill();
+		} else if (value.startsWith('QPRINT')) {
+			barcode = '';
+			printBillBeforePayment(item);
 		} else if (/^\d+[+=]\d+$/.test(value)) {
 			barcode = '';
 			// Shortcut for quantity update, e.g., "2+3" means add 3 to item at serial 2
@@ -626,5 +630,7 @@
 		{#if isEligibleToReturn}
 			<Button onclick={handleReturnBill}>Create Return Bill</Button>
 		{/if}
+		<Button onclick={() => printBillBeforePayment(item)}>Quatation Print</Button>
+		<Button>Full Bill Print</Button>
 	{/snippet}
 </Form>
