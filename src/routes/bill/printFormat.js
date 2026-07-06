@@ -3,11 +3,7 @@ import { ESCPOSPrinter } from '$lib/utils/escpos';
 import { sendPrintJob } from '$lib/utils/printer.svelte';
 import { reCalculateItem } from './calculation';
 
-export function printBillBeforePayment(item) {
-	item = JSON.parse(JSON.stringify(item));
-	item = reCalculateItem(item);
-	console.log(item.ledger);
-
+function getTableData(receipt, item) {
 	// Define Columns
 	// 1. Cart Column
 	const cartColumns = [
@@ -38,27 +34,102 @@ export function printBillBeforePayment(item) {
 		unitPrice: 'Price',
 		grossAmount: 'Total'
 	});
+
 	// 2. Purchase Summary
 	const purchaseSummaryRow = [
 		{ name: 'Total Purchase Amount', value: item.purchaseCart.subTotal },
-		{ name: 'Discount Amount', value: `-${item.purchaseCart.totalDiscount}` },
-		{ name: 'Final Purchase Amount', value: item.purchaseCart.finalAmount }
+		{ name: 'Discount Amount', value: `-${item.purchaseCart.totalDiscount}` }
+	];
+	if (item.returnCart.lineItems.length || item.ledger?.extraDiscount) {
+		purchaseSummaryRow.push({
+			name: 'Final Purchase Cart Amount',
+			value: item.purchaseCart.finalAmount
+		});
+	}
+	if (item.returnCart.lineItems.length) {
+		purchaseSummaryRow.push({
+			name: 'Final Return Cart Amount',
+			value: `-${item.returnCart.finalAmount}`
+		});
+	}
+	if (item.ledger?.extraDiscount) {
+		purchaseSummaryRow.push({
+			name: 'Extra Dicount',
+			value: `-${item.ledger?.extraDiscount}`
+		});
+	}
+	purchaseSummaryRow.push({
+		name: 'Net Amount Payable',
+		value: item.ledger?.netPayable
+	});
+	purchaseSummaryRow.map((v) => ({ ...v, mediator: ':' }));
+
+	// 3. Return Cart
+	const returnRows = item.returnCart.lineItems.map(
+		({ name, quantity, unitPrice, grossAmount }) => ({
+			name,
+			quantity,
+			unitPrice,
+			grossAmount
+		})
+	);
+	returnRows.unshift({
+		name: 'Item Name',
+		quantity: 'Qty',
+		unitPrice: 'Price',
+		grossAmount: 'Total'
+	});
+
+	// 4. Return Summary
+	const returnSummaryRow = [
+		{ name: 'Total Return Amount', value: item.returnCart.subTotal },
+		{ name: 'Discount Amount', value: `-${item.returnCart.totalDiscount}` },
+		{ name: 'Final Return Amount', value: item.returnCart.finalAmount }
 	].map((v) => ({ ...v, mediator: ':' }));
 
-	const receipt = new ESCPOSPrinter();
+	// Construct the Printable Data
+	if (item.returnCart.lineItems.length) {
+		receipt
+			.feed(1)
+			.align('center')
+			.line('Return Cart')
+			.tableBorder(returnRows, cartColumns)
+			.align('right')
+			.table(returnSummaryRow, summaryColumn);
+	}
 	receipt
-		.reset()
+		.feed(1)
 		.align('center')
-		.setTextSize(1, 1)
-		.line('Amount Details')
-		.setTextSize(0, 0)
-
+		.line('Purchase Cart')
 		.tableBorder(purchaseRows, cartColumns)
 		.align('right')
-		.table(purchaseSummaryRow, summaryColumn)
+		.table(purchaseSummaryRow, summaryColumn);
+}
 
-		.feed(6)
-		.cut();
+export function printAmountDetails(item) {
+	item = JSON.parse(JSON.stringify(item));
+	item = reCalculateItem(item);
+	console.log(item.ledger);
+
+	// Printing Logics
+	const receipt = new ESCPOSPrinter();
+	receipt.reset().align('center').setTextSize(1, 1).line('Amount Details').setTextSize(0, 0);
+	getTableData(receipt, item);
+	receipt.feed(6).cut();
+	const binaryPayload = receipt.getRawBytes();
+	sendPrintJob(configStore.value.printer.value, binaryPayload);
+}
+
+export function printBill(item) {
+	item = JSON.parse(JSON.stringify(item));
+	item = reCalculateItem(item);
+	console.log(item.ledger);
+
+	// Printing Logics
+	const receipt = new ESCPOSPrinter();
+	receipt.reset().align('center').setTextSize(1, 1).line('Bill').setTextSize(0, 0);
+	getTableData(receipt, item);
+	receipt.feed(6).cut();
 	const binaryPayload = receipt.getRawBytes();
 	sendPrintJob(configStore.value.printer.value, binaryPayload);
 }
