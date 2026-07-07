@@ -62,6 +62,13 @@ export class ESCPOSPrinter {
 		return this;
 	}
 
+	dual(left, right, totalWidth = 32) {
+		const spaceCount = totalWidth - (left.length + right.length);
+		const spaces = spaceCount > 0 ? ' '.repeat(spaceCount) : ' ';
+		this.buffer += left + spaces + right + this.LF;
+		return this;
+	}
+
 	// A very useful feature for receipts (e.g., "Total : $50.00")
 	pairs(label, value, totalWidth = 32) {
 		// Store pairs in cache to calculate max width later
@@ -164,6 +171,50 @@ export class ESCPOSPrinter {
 		}
 
 		this.line(horizontal);
+
+		return this;
+	}
+
+	tableLine(rows, columns, gap = 2) {
+		// Generate the space string used between columns
+		const columnGapSpace = ' '.repeat(gap);
+
+		// Calculate total internal width: Sum of all column widths + gap spaces between them
+		const totalContentWidth =
+			columns.reduce((sum, c) => sum + c.width, 0) + gap * (columns.length - 1);
+
+		// Create a pure horizontal line made only of dashes matching the exact content width
+		const pureHorizontal = '-'.repeat(totalContentWidth);
+
+		// Top horizontal line
+		this.line(pureHorizontal);
+
+		rows.forEach((row, rowIndex) => {
+			let line = ''; // Start clean without arbitrary leading spaces
+			const isFirstRow = rowIndex === 0;
+
+			columns.forEach((col, colIndex) => {
+				const text = String(row[col.key] ?? '');
+
+				// Append the aligned text
+				line += this._alignCell(text, col.width, col.align);
+
+				// Add the dynamic gap only if it's NOT the last column
+				if (colIndex < columns.length - 1) {
+					line += columnGapSpace;
+				}
+			});
+
+			this.line(line);
+
+			// Draw the horizontal line under the first row (header)
+			if (isFirstRow) {
+				this.line(pureHorizontal);
+			}
+		});
+
+		// Bottom horizontal line
+		this.line(pureHorizontal);
 
 		return this;
 	}
@@ -310,6 +361,37 @@ export class ESCPOSPrinter {
 
 	openCashDrawer() {
 		this.buffer += '\x1B\x70\x00\x19\xFA';
+		return this;
+	}
+
+	/**
+	 * Sets the line spacing to 'n' dots (vertical motion units).
+	 * Standard default is usually 30 dots (\x1E).
+	 * @param {number} n - Number of dots (0 to 255)
+	 */
+	setLineSpacing(n) {
+		// ESC 3 n (where n is the spacing in dots)
+		this.buffer += this.ESC + '3' + String.fromCharCode(n);
+		return this;
+	}
+
+	/**
+	 * Resets the line spacing back to the printer's default (usually 1/6 inch).
+	 */
+	resetLineSpacing() {
+		// ESC 2
+		this.buffer += this.ESC + '2';
+		return this;
+	}
+
+	/**
+	 * Feeds the paper by a tiny amount of dots.
+	 * @param {number} dots - How many micro-units to space out (e.g., 5 to 15)
+	 */
+	microSpace(dots = 10) {
+		this.setLineSpacing(dots);
+		this.buffer += this.LF; // Execute the spacing using a blank line feed
+		this.resetLineSpacing(); // Immediately restore default spacing so regular text isn't broken
 		return this;
 	}
 

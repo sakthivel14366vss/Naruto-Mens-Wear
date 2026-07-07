@@ -1,4 +1,5 @@
 import { configStore } from '$lib/store/config.store.svelte';
+import { getFormattedTimestamp } from '$lib/utils/dateTime';
 import { ESCPOSPrinter } from '$lib/utils/escpos';
 import { sendPrintJob } from '$lib/utils/printer.svelte';
 import { reCalculateItem } from './calculation';
@@ -7,9 +8,11 @@ function getTableData(receipt, item) {
 	// Define Columns
 	// 1. Cart Column
 	const cartColumns = [
-		{ key: 'name', width: 22, align: 'left' },
+		{ key: 'serial', width: 2, align: 'left' },
+		{ key: 'name', width: 20, align: 'left' },
 		{ key: 'quantity', width: 3, align: 'center' },
 		{ key: 'unitPrice', width: 5, align: 'right' },
+		{ key: 'discountPercentage', width: 3, align: 'center' },
 		{ key: 'grossAmount', width: 5, align: 'right' }
 	];
 	const summaryColumn = [
@@ -21,17 +24,21 @@ function getTableData(receipt, item) {
 	// Define Rows
 	// 1. Purchase Cart
 	const purchaseRows = item.purchaseCart.lineItems.map(
-		({ name, quantity, unitPrice, grossAmount }) => ({
+		({ name, quantity, unitPrice, discountPercentage, grossAmount }, index) => ({
+			serial: index + 1,
 			name,
 			quantity,
 			unitPrice,
+			discountPercentage: `${discountPercentage}%`,
 			grossAmount
 		})
 	);
 	purchaseRows.unshift({
+		serial: 'Sn',
 		name: 'Item Name',
 		quantity: 'Qty',
 		unitPrice: 'Price',
+		discountPercentage: 'Dis %',
 		grossAmount: 'Total'
 	});
 
@@ -58,25 +65,25 @@ function getTableData(receipt, item) {
 			value: `-${item.ledger?.extraDiscount}`
 		});
 	}
-	purchaseSummaryRow.push({
-		name: 'Net Amount Payable',
-		value: item.ledger?.netPayable
-	});
 	purchaseSummaryRow.map((v) => ({ ...v, mediator: ':' }));
 
 	// 3. Return Cart
 	const returnRows = item.returnCart.lineItems.map(
-		({ name, quantity, unitPrice, grossAmount }) => ({
+		({ name, quantity, unitPrice, discountPercentage, grossAmount }, index) => ({
+			serial: index + 1,
 			name,
 			quantity,
 			unitPrice,
+			discountPercentage,
 			grossAmount
 		})
 	);
 	returnRows.unshift({
+		serial: 'Sn',
 		name: 'Item Name',
 		quantity: 'Qty',
 		unitPrice: 'Price',
+		discountPercentage: 'Dis %',
 		grossAmount: 'Total'
 	});
 
@@ -93,7 +100,7 @@ function getTableData(receipt, item) {
 			.feed(1)
 			.align('center')
 			.line('Return Cart')
-			.tableBorder(returnRows, cartColumns)
+			.tableLine(returnRows, cartColumns)
 			.align('right')
 			.table(returnSummaryRow, summaryColumn);
 	}
@@ -101,15 +108,18 @@ function getTableData(receipt, item) {
 		.feed(1)
 		.align('center')
 		.line('Purchase Cart')
-		.tableBorder(purchaseRows, cartColumns)
+		.tableLine(purchaseRows, cartColumns)
 		.align('right')
-		.table(purchaseSummaryRow, summaryColumn);
+		.table(purchaseSummaryRow, summaryColumn)
+		.setTextSize(1, 1)
+		.microSpace()
+		.line(`Total: ${item.ledger?.netPayable}`)
+		.setTextSize(0, 0);
 }
 
 export function printAmountDetails(item) {
 	item = JSON.parse(JSON.stringify(item));
 	item = reCalculateItem(item);
-	console.log(item.ledger);
 
 	// Printing Logics
 	const receipt = new ESCPOSPrinter();
@@ -123,13 +133,53 @@ export function printAmountDetails(item) {
 export function printBill(item) {
 	item = JSON.parse(JSON.stringify(item));
 	item = reCalculateItem(item);
-	console.log(item.ledger);
 
 	// Printing Logics
 	const receipt = new ESCPOSPrinter();
-	receipt.reset().align('center').setTextSize(1, 1).line('Bill').setTextSize(0, 0);
+	receipt
+		.reset()
+		.align('center')
+		.setTextSize(1, 1)
+		.bold(true)
+		.line('Naruto Mens Wear')
+		.bold(false)
+		.setTextSize(0, 0)
+		.microSpace()
+		.line('Khadarpet, Vaniyambadi, Tirupathur 635751')
+		.microSpace()
+		.bold(true)
+		.dual(`Bill No: BL07072605`, getFormattedTimestamp(), 48)
+		.bold(false);
 	getTableData(receipt, item);
+	receipt
+		.feed(1)
+		.bold(true)
+		.setTextSize(1, 0)
+		.align('center')
+		.line(item.returnCart.lineItems.length ? 'Note: Exchange Claimed' : 'Note: Refund Policy')
+		.setTextSize(0, 0)
+		.microSpace()
+		.line(
+			item.returnCart.lineItems.length
+				? 'Exchange already claimed. Further refunds or exchanges not allowed.'
+				: 'Strictly no refunds. Exchanges allowed within 3 days with original bill.'
+		)
+		.dashedLine(48)
+		.microSpace()
+		.setTextSize(1, 0)
+		.line('Thank You')
+		.bold(false)
+		.setTextSize(0, 0)
+		.microSpace()
+		.line('We were happy with your visit, come again!')
+		.microSpace()
+		.barcode('BL07072605')
+		.line('BL07072605');
+	if (item.returnCart.lineItems.length) {
+		receipt.microSpace().barcode('BL07072606').line('BL07072606');
+	}
 	receipt.feed(6).cut();
+
 	const binaryPayload = receipt.getRawBytes();
 	sendPrintJob(configStore.value.printer.value, binaryPayload);
 }
