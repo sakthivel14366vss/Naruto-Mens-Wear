@@ -8,10 +8,11 @@ export function responseInvalid(message) {
 	});
 }
 
-export function responseSuccess(message) {
+export function responseSuccess(message, data = null) {
 	return {
 		success: true,
 		responseAt: Date.now(),
-		message
+		message,
+		data
 	};
 }

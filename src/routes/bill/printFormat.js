@@ -6,6 +6,7 @@ import { reCalculateItem } from './calculation';
 
 function getTableData(receipt, item) {
 	// Define Columns
+
 	// 1. Cart Column
 	const cartColumns = [
 		{ key: 'serial', width: 2, align: 'left' },
@@ -148,7 +149,7 @@ export function printBill(item) {
 		.line('Khadarpet, Vaniyambadi, Tirupathur 635751')
 		.microSpace()
 		.bold(true)
-		.dual(`Bill No: BL07072605`, getFormattedTimestamp(), 48)
+		.dual(`Bill No: ${item.metadata.billNo}`, getFormattedTimestamp(), 48)
 		.bold(false);
 	getTableData(receipt, item);
 	receipt
@@ -173,10 +174,10 @@ export function printBill(item) {
 		.microSpace()
 		.line('We were happy with your visit, come again!')
 		.microSpace()
-		.barcode('BL07072605')
-		.line('BL07072605');
+		.barcode(item.metadata.billNo)
+		.line(item.metadata.billNo);
 	if (item.returnCart.lineItems.length) {
-		receipt.microSpace().barcode('BL07072606').line('BL07072606');
+		receipt.microSpace().barcode(item.metadata.referenceBill).line(item.metadata.referenceBill);
 	}
 	receipt.feed(6).cut();
 

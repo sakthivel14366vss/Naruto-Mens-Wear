@@ -16,6 +16,7 @@
 		getMonthBounds,
 		calculateNewReferenceBounds
 	} from '$lib/utils/dateFilter';
+	import { printBill } from './printFormat';
 
 	const sideInputStyle =
 		'rounded border-2 cursor-pointer border-gray-400 px-3 py-1 text-gray-500 outline-none focus:border-blue-600 focus:text-blue-600 hover:border-blue-600 hover:text-blue-600';
@@ -52,7 +53,8 @@
 
 	useFormHandler(
 		() => form,
-		() => {
+		(result) => {
+			if (result?.data?._id) printBill(result?.data);
 			invalidate('stock');
 			handleFormClose();
 		}

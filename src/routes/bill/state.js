@@ -48,7 +48,7 @@ export const initialBillState = {
 		billNo: '', // Unique database transaction ID string (e.g., "Bill-2026-0001")
 		dailySequenceCount: 0, // Daily token index sequence (Resets back to 1 every morning)
 		createdDate: '', // ISO Generation date footprint (YYYY-MM-DD)
-		referenceBill: '', // Array of linked historical Invoice IDs involved in an exchange/return
+		referenceBill: '',
 		referByBill: '',
 		customer: {
 			name: '', // Customer name (Default to empty string for walk-in anonymous customers)

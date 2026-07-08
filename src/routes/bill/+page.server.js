@@ -100,7 +100,7 @@ export const actions = {
 			});
 		}
 
-		return responseSuccess('Bill Saved');
+		return responseSuccess('Bill Saved', JSON.parse(JSON.stringify(newBill)));
 	}
 };
 

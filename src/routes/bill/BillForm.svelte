@@ -115,7 +115,9 @@
 			printAmountDetails(item);
 		} else if (value.startsWith('BPRINT')) {
 			barcode = '';
-			printBill(item);
+			if (item.metadata.billNo) {
+				printBill(item);
+			}
 		} else if (/^\d+[+=]\d+$/.test(value)) {
 			barcode = '';
 			// Shortcut for quantity update, e.g., "2+3" means add 3 to item at serial 2
@@ -634,6 +636,8 @@
 			<Button onclick={handleReturnBill}>Create Return Bill</Button>
 		{/if}
 		<Button onclick={() => printAmountDetails(item)}>Print Amount</Button>
-		<Button onclick={() => printBill(item)}>Print Bill</Button>
+		{#if item.metadata.billNo}
+			<Button onclick={() => printBill(item)}>Print Bill</Button>
+		{/if}
 	{/snippet}
 </Form>
