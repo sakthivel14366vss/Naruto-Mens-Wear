@@ -134,6 +134,8 @@ export function printAmountDetails(item) {
 export function printBill(item) {
 	item = JSON.parse(JSON.stringify(item));
 	item = reCalculateItem(item);
+	const isGstShow = configStore.value.gstBill.value;
+	const GSTIN = configStore.value.gstNumber.value;
 
 	// Printing Logics
 	const receipt = new ESCPOSPrinter();
@@ -149,8 +151,13 @@ export function printBill(item) {
 		.line('Khadarpet, Vaniyambadi, Tirupathur 635751')
 		.microSpace()
 		.bold(true)
-		.dual(`Bill No: ${item.metadata.billNo}`, getFormattedTimestamp(), 48)
-		.bold(false);
+		.dual(`Bill No: ${item.metadata.billNo}`, getFormattedTimestamp(), 48);
+
+	if (isGstShow && GSTIN) {
+		receipt.align().line(`GSTIN: ${GSTIN}`);
+	}
+
+	receipt.bold(false);
 	getTableData(receipt, item);
 	receipt
 		.feed(1)
