@@ -23,6 +23,7 @@ export const actions = {
 			name: formData.get('name')?.toString().trim() || '',
 			phone: formatter.number(formData.get('phone')),
 			amount: formatter.number(formData.get('amount')),
+			description: formData.get('description') || '',
 			savedAt: new Date()
 		};
 

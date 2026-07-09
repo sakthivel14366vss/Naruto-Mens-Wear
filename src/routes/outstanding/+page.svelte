@@ -59,4 +59,5 @@
 	<Input caseMode="capitalize" key="name" autofocus value={editableItem?.name} />
 	<Input key="phone" value={editableItem?.phone} />
 	<Input key="amount" value={editableItem?.amount} />
+	<Input key="description" value={editableItem?.description} />
 </Form>
