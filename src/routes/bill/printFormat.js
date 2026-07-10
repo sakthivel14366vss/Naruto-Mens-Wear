@@ -137,6 +137,12 @@ export function printBill(item) {
 	const isGstShow = configStore.value.gstBill.value;
 	const GSTIN = configStore.value.gstNumber.value;
 
+	// const receipt2 = new ESCPOSPrinter();
+	// receipt2.reset().align('center').barcode('APRINT').line('APRINT').feed(6).cut();
+	// const binaryPayload2 = receipt2.getRawBytes();
+	// sendPrintJob(configStore.value.printer.value, binaryPayload2);
+	// return 0;
+
 	// Printing Logics
 	const receipt = new ESCPOSPrinter();
 	receipt
