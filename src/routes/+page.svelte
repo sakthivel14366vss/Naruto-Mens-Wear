@@ -6,6 +6,7 @@
 		{ emoji: '💵', name: 'Payment' },
 		{ emoji: '📦', name: 'Stock' },
 		{ emoji: '💰', name: 'Outstanding' },
+		{ emoji: '🪙', name: 'Advance' },
 		{ emoji: '🧰', name: 'Configuration' }
 	];
 
@@ -25,6 +26,9 @@
 			case 'O':
 				navigations.Outstanding();
 				break;
+			case 'O':
+				navigations.Advance();
+				break;
 			case 'C':
 				navigations.Configuration();
 				break;
@@ -36,6 +40,7 @@
 		Bill: () => goto('/bill'),
 		Payment: () => goto('/payment'),
 		Outstanding: () => goto('/outstanding'),
+		Advance: () => goto('/advance'),
 		Configuration: () => goto('/config')
 	};
 </script>

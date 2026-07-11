@@ -1,0 +1,11 @@
+Advance amount can take print receipt and again used that in purchase times - feature
+Extra charges - we need simply extra transaction every extra deduction and addition come in that one place credit claim and advance calim everything - feature
+Old payment also payable options in bills like AOD or DOD - modifyable
+Click option in records and also Add actions buttons for all records - feature
+Bill total summary details not comming same as screen in the printables - bug
+In outstanding we show dates - modifyable
+Bill creation should be seperatly - modifyable
+In bill records we show only the items amount in that bills not a pending or any other amount - modifyable
+
+Advance amount
+Extra charges
